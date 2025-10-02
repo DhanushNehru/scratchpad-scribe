@@ -14,6 +14,10 @@ const Index = () => {
     }
   }, [notes, activeNoteId]);
 
+  const handleLogin = () => { 
+    console.log('Login successful');
+  };
+
   const handleCreateNote = () => {
     const newId = createNote();
     setActiveNoteId(newId);
@@ -30,6 +34,24 @@ const Index = () => {
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background">
+      
+      {/* Simple login form at the top of the page */}
+      <div className="absolute top-4 right-4 z-50 bg-white shadow-md rounded px-6 py-4 flex items-center gap-2">
+        <input
+          type="text"
+          placeholder="Username"
+          className="border rounded px-2 py-1"
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          className="border rounded px-2 py-1"
+        />
+        <button onClick={handleLogin}
+        className="bg-primary text-white px-3 py-1 rounded hover:bg-primary/80">
+          Log in
+        </button>
+      </div>
       <NotesSidebar
         notes={notes}
         activeNoteId={activeNoteId}
