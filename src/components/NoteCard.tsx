@@ -9,7 +9,14 @@ interface NoteCardProps {
 }
 
 export function NoteCard({ note, isActive, onClick }: NoteCardProps) {
-  const preview = note.content.slice(0, 100) || 'No content';
+  // Strip HTML tags for plain text preview
+  const stripHtml = (html: string) => {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || '';
+  };
+
+  const preview = note.content ? stripHtml(note.content).slice(0, 100) : 'No content';
   
   return (
     <Card
