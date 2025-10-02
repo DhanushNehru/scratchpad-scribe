@@ -11,9 +11,8 @@ interface NoteCardProps {
 export function NoteCard({ note, isActive, onClick }: NoteCardProps) {
   // Strip HTML tags for plain text preview
   const stripHtml = (html: string) => {
-    const tmp = document.createElement('div');
-    tmp.innerHTML = html;
-    return tmp.textContent || tmp.innerText || '';
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    return doc.body.textContent || '';
   };
 
   const preview = note.content ? stripHtml(note.content).slice(0, 100) : 'No content';
