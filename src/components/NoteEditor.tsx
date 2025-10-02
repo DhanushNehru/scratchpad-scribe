@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Note } from '@/types/note';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
 import {
@@ -15,6 +14,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { RichTextToolbar } from './RichTextToolbar';
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Underline from '@tiptap/extension-underline';
+import TextAlign from '@tiptap/extension-text-align';
+import Placeholder from '@tiptap/extension-placeholder';
+import './editor-styles.css';
 
 interface NoteEditorProps {
   note: Note;
@@ -24,22 +30,46 @@ interface NoteEditorProps {
 
 export function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
   const [title, setTitle] = useState(note.title);
-  const [content, setContent] = useState(note.content);
+
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      Underline,
+      TextAlign.configure({
+        types: ['heading', 'paragraph'],
+      }),
+      Placeholder.configure({
+        placeholder: 'Start writing...',
+      }),
+    ],
+    content: note.content,
+    onUpdate: ({ editor }) => {
+      const html = editor.getHTML();
+      onUpdate(note.id, { title, content: html });
+    },
+    editorProps: {
+      attributes: {
+        class: 'prose prose-sm dark:prose-invert max-w-none focus:outline-none min-h-full p-4',
+      },
+    },
+  });
 
   useEffect(() => {
     setTitle(note.title);
-    setContent(note.content);
-  }, [note.id, note.title, note.content]);
+    if (editor && editor.getHTML() !== note.content) {
+      editor.commands.setContent(note.content);
+    }
+  }, [note.id, note.title, note.content, editor]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (title !== note.title || content !== note.content) {
-        onUpdate(note.id, { title, content });
+      if (title !== note.title) {
+        onUpdate(note.id, { title });
       }
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [title, content, note.id, note.title, note.content, onUpdate]);
+  }, [title, note.id, note.title, onUpdate]);
 
   return (
     <div className="flex flex-col h-full">
@@ -72,12 +102,12 @@ export function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
           </AlertDialogContent>
         </AlertDialog>
       </div>
-      <Textarea
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        className="flex-1 resize-none border-none shadow-none focus-visible:ring-0 text-base leading-relaxed"
-        placeholder="Start writing..."
-      />
+
+      <RichTextToolbar editor={editor} />
+
+      <div className="flex-1 overflow-auto">
+        <EditorContent editor={editor} />
+      </div>
     </div>
   );
 }
