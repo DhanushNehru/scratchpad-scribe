@@ -12,7 +12,7 @@ export function useNotes() {
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
-        const notesWithDates = parsed.map((note: any) => ({
+        const notesWithDates = parsed.map((note: Note & { createdAt: string; updatedAt: string }) => ({
           ...note,
           createdAt: new Date(note.createdAt),
           updatedAt: new Date(note.updatedAt),
