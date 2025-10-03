@@ -14,6 +14,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { useLocation } from 'react-router-dom';
 interface NoteCardProps {
   note: Note;
   isActive: boolean;
@@ -22,6 +23,8 @@ interface NoteCardProps {
 }
 
 export function NoteCard({ note, isActive, onClick, onDelete }: NoteCardProps) {
+    const path = useLocation()?.pathname
+    const deletePage = path === '/recycle-bin'
   
   const preview = note.content.slice(0, 100) || 'No content';
 
@@ -66,7 +69,10 @@ export function NoteCard({ note, isActive, onClick, onDelete }: NoteCardProps) {
             <AlertDialogHeader>
               <AlertDialogTitle>Delete Note</AlertDialogTitle>
               <AlertDialogDescription>
-                This note will be moved to the recycle bin and can be restored later. Are you sure you want to continue?
+                { 
+                  deletePage ? "This note will be permanently deleted and cannot be recovered. Are you sure you want to continue?" :
+                  "This note will be moved to the recycle bin and can be restored later. Are you sure you want to continue?"
+                }
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

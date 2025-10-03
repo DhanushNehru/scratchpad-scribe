@@ -15,6 +15,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { useLocation } from 'react-router-dom';
 
 interface NoteEditorProps {
   note: Note;
@@ -25,6 +26,8 @@ interface NoteEditorProps {
 export function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
   const [title, setTitle] = useState(note.title);
   const [content, setContent] = useState(note.content);
+  const path = useLocation()?.pathname
+  const deletePage = path === '/recycle-bin'
 
   useEffect(() => {
     setTitle(note.title);
@@ -60,7 +63,10 @@ export function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
               <AlertDialogHeader>
                 <AlertDialogTitle>Delete Note</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This note will be moved to the recycle bin and can be restored later. Are you sure you want to continue?
+                { 
+                  deletePage ? "This note will be permanently deleted and cannot be recovered. Are you sure you want to continue?" :
+                  "This note will be moved to the recycle bin and can be restored later. Are you sure you want to continue?"
+                }
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
