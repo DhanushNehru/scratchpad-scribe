@@ -27,21 +27,23 @@ export function NoteCard({ note, isActive, onClick, onDelete }: NoteCardProps) {
 
   return (
     <Card
-      className={`p-4 cursor-pointer transition-all justify-between flex hover:shadow-md ${
-        isActive ? 'ring-2 ring-primary bg-accent/5' : ''
+      className={`p-4 rounded-xl cursor-pointer transition-all flex flex-col gap-2 shadow-sm border border-border hover:shadow-lg ${
+        isActive ? 'ring-2 ring-primary bg-accent/10 border-primary' : 'bg-card'
       }`}
       onClick={onClick}
     >
-      <div className="flex flex-col">
-        <h3 className="font-semibold text-foreground mb-1 truncate font-serif">
+      <div className="flex flex-col gap-1">
+        <h3 className="font-semibold text-lg text-foreground truncate font-serif">
           {note.title || 'Untitled Note'}
         </h3>
         <p className="text-xs text-muted-foreground font-sans">
           {formatDistanceToNow(note.updatedAt, { addSuffix: true })}
         </p>
       </div>
-
-      <div className="flex justify-center items-center">
+      <p className="text-sm text-muted-foreground truncate mb-2">
+        {preview}
+      </p>
+      <div className="flex justify-end items-center mt-auto">
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button

@@ -42,12 +42,12 @@ export function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
   }, [title, content, note.id, note.title, note.content, onUpdate]);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-card rounded-xl shadow-md p-6">
       <div className="flex items-center justify-between mb-4 pb-4 border-b">
         <Input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="text-2xl font-semibold font-serif border-none shadow-none focus-visible:ring-0 px-0"
+          className="text-2xl font-semibold font-serif border-none shadow-none focus-visible:ring-0 px-0 bg-transparent"
           placeholder="Note title..."
         />
         <AlertDialog>
@@ -72,10 +72,17 @@ export function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
           </AlertDialogContent>
         </AlertDialog>
       </div>
+      {/* Toolbar for future formatting features */}
+      <div className="flex gap-2 mb-4">
+        <Button variant="ghost" size="icon" title="Bold" className="text-muted-foreground"><b>B</b></Button>
+        <Button variant="ghost" size="icon" title="Italic" className="text-muted-foreground"><i>I</i></Button>
+        <Button variant="ghost" size="icon" title="Underline" className="text-muted-foreground"><u>U</u></Button>
+        {/* Add more formatting buttons as needed */}
+      </div>
       <Textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        className="flex-1 resize-none border-none shadow-none focus-visible:ring-0 text-base leading-relaxed"
+        className="flex-1 resize-none border-none shadow-none focus-visible:ring-0 text-base leading-relaxed bg-transparent rounded-lg p-3"
         placeholder="Start writing..."
       />
     </div>

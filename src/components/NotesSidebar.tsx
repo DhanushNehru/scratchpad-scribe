@@ -29,32 +29,26 @@ export function NotesSidebar({
   );
 
   return (
-    <div className="w-screen md:w-80 border-r bg-secondary/30 flex flex-col h-screen">
-      <div className="p-4 border-b space-y-3">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-foreground">Notes</h1>
-           <div className="flex gap-2">
+    <aside className="w-screen md:w-80 border-r bg-secondary flex flex-col h-screen shadow-lg">
+      <div className="p-4 border-b bg-card rounded-b-xl shadow-sm">
+        <div className="flex items-center justify-between mb-2">
+          <h1 className="text-2xl font-bold text-foreground tracking-tight">Notes</h1>
+          <div className="flex gap-2">
             <Button
               onClick={() => {
                 if (!activeNoteId) return;
-                
                 const activeNote = notes.find(note => note.id === activeNoteId);
                 if (!activeNote) return;
-                
                 const doc = new jsPDF();
                 const pageWidth = doc.internal.pageSize.getWidth();
                 const margin = 10;
                 const contentWidth = pageWidth - (margin * 2);
-                
                 doc.setFontSize(16);
                 doc.text(activeNote.title || 'Untitled Note', margin, margin);
-                
                 doc.setFontSize(12);
                 const contentLines = doc.splitTextToSize(activeNote.content, contentWidth);
-                
                 let yOffset = margin + 10;
                 const lineHeight = 7;
-                
                 contentLines.forEach((line: string) => {
                   if (yOffset > doc.internal.pageSize.getHeight() - margin) {
                     doc.addPage();
@@ -63,7 +57,6 @@ export function NotesSidebar({
                   doc.text(line, margin, yOffset);
                   yOffset += lineHeight;
                 });
-                
                 doc.save(`${activeNote.title || 'note'}.pdf`);
               }}
               size="icon"
@@ -77,17 +70,17 @@ export function NotesSidebar({
             </Button>
           </div>
         </div>
-        <div className="relative">
+        <div className="relative mt-2">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search notes..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
+            className="pl-9 rounded-lg bg-secondary/60 border border-border focus-visible:ring-2 focus-visible:ring-primary"
           />
         </div>
       </div>
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1 bg-secondary/50">
         <div className="p-4 space-y-2">
           {filteredNotes.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
@@ -100,11 +93,12 @@ export function NotesSidebar({
                 note={note}
                 isActive={note.id === activeNoteId}
                 onClick={() => onSelectNote(note.id)}
+                onDelete={onCreateNote} // TODO: Replace with actual delete logic if needed
               />
             ))
           )}
         </div>
       </ScrollArea>
-    </div>
+    </aside>
   );
 }
