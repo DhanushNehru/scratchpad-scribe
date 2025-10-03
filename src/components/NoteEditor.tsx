@@ -60,7 +60,7 @@ export function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
               <AlertDialogHeader>
                 <AlertDialogTitle>Delete Note</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Are you sure you want to delete this note? This action cannot be undone.
+                  This note will be moved to the recycle bin and can be restored later. Are you sure you want to continue?
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>

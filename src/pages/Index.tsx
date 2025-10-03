@@ -5,7 +5,7 @@ import { NoteEditor } from '@/components/NoteEditor';
 import { FileText, ArrowLeft } from 'lucide-react';
 
 const Index = () => {
-  const { notes, createNote, updateNote, deleteNote } = useNotes();
+  const { notes, createNote, updateNote, deleteNote, softDeleteNote } = useNotes();
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -27,8 +27,14 @@ const Index = () => {
       setActiveNoteId(notes.length > 1 ? notes[0].id : null);
     }
   };
+  const handleSoftDeleteNote = (id: string) => {
+    softDeleteNote(id);
+    if (activeNoteId === id) {
+      setActiveNoteId(null);
+    }
+  };
 
-  const activeNote = notes.find((note) => note.id === activeNoteId);
+  const activeNote = notes.find((note) => note.id === activeNoteId && !note.deleted);
 
   return (
     <div className="flex h-screen  overflow-hidden bg-background">
@@ -40,6 +46,7 @@ const Index = () => {
             activeNoteId={activeNoteId}
             onSelectNote={setActiveNoteId}
             onCreateNote={handleCreateNote}
+            onDelete={handleSoftDeleteNote}
           />
           <main className="flex-1 overflow-hidden">
             {activeNote ? (
@@ -47,7 +54,7 @@ const Index = () => {
                 <NoteEditor
                   note={activeNote}
                   onUpdate={updateNote}
-                  onDelete={handleDeleteNote}
+                  onDelete={handleSoftDeleteNote}
                 />
               </div>
             ) : (
@@ -75,7 +82,7 @@ const Index = () => {
               <NoteEditor
                 note={activeNote}
                 onUpdate={updateNote}
-                onDelete={handleDeleteNote}
+                onDelete={handleSoftDeleteNote}
               />
             </div>
           ) : (
@@ -84,6 +91,7 @@ const Index = () => {
               activeNoteId={activeNoteId}
               onSelectNote={setActiveNoteId}
               onCreateNote={handleCreateNote}
+              onDelete={handleSoftDeleteNote}
             />
           )}
         </main>
