@@ -1,6 +1,6 @@
-import { Note } from '@/types/note';
+import { Note, formatTimestamp, getRelativeTime } from '@/types/note';
 import { Card } from '@/components/ui/card';
-import { formatDistanceToNow } from 'date-fns';
+import { Calendar, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
 import {

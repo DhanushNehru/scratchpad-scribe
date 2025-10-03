@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Note } from '@/types/note';
+import { Note, formatTimestamp, getRelativeTime } from '@/types/note';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Calendar, Clock } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
