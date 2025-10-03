@@ -55,10 +55,19 @@ export function useNotes() {
     setNotes((prev) => prev.filter((note) => note.id !== id));
   };
 
+  const softDeleteNote = (id: string) => {
+    setNotes((prev) =>
+      prev.map((note) =>
+        note.id === id ? { ...note, deleted: true } : note
+      )
+    );
+  };
+
   return {
     notes,
     createNote,
     updateNote,
     deleteNote,
+    softDeleteNote
   };
 }

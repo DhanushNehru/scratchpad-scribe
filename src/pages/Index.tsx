@@ -4,8 +4,8 @@ import { NotesSidebar } from '@/components/NotesSidebar';
 import { NoteEditor } from '@/components/NoteEditor';
 import { FileText, ArrowLeft } from 'lucide-react';
 
-const Index = () => {
-  const { notes, createNote, updateNote, deleteNote } = useNotes();
+const Index = ({deletePage = false}: {deletePage?: boolean}) => {
+  const { notes, createNote, updateNote, deleteNote, softDeleteNote } = useNotes();
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -16,6 +16,10 @@ const Index = () => {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
+  useEffect(() => {
+    setActiveNoteId(null);
+  }, [deletePage])
+
   const handleCreateNote = () => {
     const newId = createNote();
     setActiveNoteId(newId);
@@ -25,6 +29,12 @@ const Index = () => {
     deleteNote(id);
     if (activeNoteId === id) {
       setActiveNoteId(notes.length > 1 ? notes[0].id : null);
+    }
+  };
+  const handleSoftDeleteNote = (id: string) => {
+    softDeleteNote(id);
+    if (activeNoteId === id) {
+      setActiveNoteId(null);
     }
   };
 
@@ -40,6 +50,7 @@ const Index = () => {
             activeNoteId={activeNoteId}
             onSelectNote={setActiveNoteId}
             onCreateNote={handleCreateNote}
+            onDelete={ deletePage ? handleDeleteNote : handleSoftDeleteNote}
           />
           <main className="flex-1 overflow-hidden">
             {activeNote ? (
@@ -47,7 +58,7 @@ const Index = () => {
                 <NoteEditor
                   note={activeNote}
                   onUpdate={updateNote}
-                  onDelete={handleDeleteNote}
+                  onDelete={ deletePage ? handleDeleteNote : handleSoftDeleteNote}
                 />
               </div>
             ) : (
@@ -75,7 +86,7 @@ const Index = () => {
               <NoteEditor
                 note={activeNote}
                 onUpdate={updateNote}
-                onDelete={handleDeleteNote}
+                onDelete={ deletePage ? handleDeleteNote : handleSoftDeleteNote}
               />
             </div>
           ) : (
@@ -84,6 +95,7 @@ const Index = () => {
               activeNoteId={activeNoteId}
               onSelectNote={setActiveNoteId}
               onCreateNote={handleCreateNote}
+              onDelete={ deletePage ? handleDeleteNote : handleSoftDeleteNote}
             />
           )}
         </main>
