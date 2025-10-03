@@ -12,7 +12,7 @@ A simple, fast, and elegant online note-taking app built with modern web technol
 - 🎨 Beautiful UI powered by shadcn-ui & TailwindCSS
 - ⚡ Lightning-fast development with Vite
 - 📱 Responsive design for desktop & mobile
-- 🌙 Dark mode *(coming soon or available)*
+- 🌙 Dark mode *(coming soon)*
 
 ---
 
@@ -71,7 +71,7 @@ We welcome contributions! 🎉 Whether it's fixing a bug, adding new features, o
 
 1. Fork the repo
 2. Create a new branch  
-   `git checkout -b feature/your-feature`
+   `git switch -c feature/your-feature`
 3. Make your changes
 4. Commit & push  
    `git commit -m "Add your message"`
@@ -83,7 +83,7 @@ Check out issues labeled **good first issue** to get started.
 
 ## 📜 License
 
-This project is licensed under the **MIT License**.
+This project is licensed under the **Apache 2.0**.
 
 ---
 
