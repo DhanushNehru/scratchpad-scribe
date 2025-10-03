@@ -13,6 +13,8 @@ interface NotesSidebarProps {
   activeNoteId: string | null;
   onSelectNote: (id: string) => void;
   onCreateNote: () => void;
+  onDuplicateNote?: (id: string) => void;
+  onDelete?: (id: string) => void;
 }
 
 export function NotesSidebar({
@@ -20,6 +22,8 @@ export function NotesSidebar({
   activeNoteId,
   onSelectNote,
   onCreateNote,
+  onDuplicateNote,
+  onDelete,
 }: NotesSidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -102,6 +106,8 @@ export function NotesSidebar({
                 note={note}
                 isActive={note.id === activeNoteId}
                 onClick={() => onSelectNote(note.id)}
+                onDuplicate={onDuplicateNote ?? undefined}
+                onDelete={onDelete ?? (() => {})}
               />
             ))
           )}
