@@ -74,7 +74,7 @@ export function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
         </div>
 
         {/* Timestamp Display */}
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+        <div className="flex items-center gap-4 text-sm text-muted-foreground my-3">
           <div className="flex items-center gap-1.5">
             <Calendar className="w-4 h-4" />
             <span>Created: {formatTimestamp(note.createdAt)}</span>
