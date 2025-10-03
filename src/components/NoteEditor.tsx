@@ -15,6 +15,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import MarkdownRenderer from '@/components/MarkdownRenderer';
 
 interface NoteEditorProps {
   note: Note;
@@ -25,6 +27,7 @@ interface NoteEditorProps {
 export function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
   const [title, setTitle] = useState(note.title);
   const [content, setContent] = useState(note.content);
+  const [mode, setMode] = useState<'edit' | 'preview'>('edit');
 
   useEffect(() => {
     setTitle(note.title);
@@ -50,34 +53,55 @@ export function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
           className="text-2xl font-semibold border-none shadow-none focus-visible:ring-0 px-0"
           placeholder="Note title..."
         />
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
-              <Trash2 className="h-5 w-5" />
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete Note</AlertDialogTitle>
-              <AlertDialogDescription>
-                Are you sure you want to delete this note? This action cannot be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={() => onDelete(note.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <div className="flex items-center gap-2">
+          <Tabs value={mode} onValueChange={(v) => setMode(v as 'edit' | 'preview')}>
+            <TabsList>
+              <TabsTrigger value="edit">Edit</TabsTrigger>
+              <TabsTrigger value="preview">Preview</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                <Trash2 className="h-5 w-5" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Note</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete this note? This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={() => onDelete(note.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </div>
-      <Textarea
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        className="flex-1 resize-none border-none shadow-none focus-visible:ring-0 text-base leading-relaxed"
-        placeholder="Start writing..."
-      />
+      <Tabs value={mode} onValueChange={(v) => setMode(v as 'edit' | 'preview')} className="flex-1 flex flex-col">
+        <TabsContent value="edit" className="flex-1 flex flex-col">
+          <Textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            className="flex-1 resize-none border-none shadow-none focus-visible:ring-0 text-base leading-relaxed"
+            placeholder="Start writing in Markdown..."
+          />
+        </TabsContent>
+        <TabsContent value="preview" className="flex-1 overflow-auto p-1 sm:p-0">
+          <div className="flex-1">
+            {content?.trim() ? (
+              <MarkdownRenderer content={content} />
+            ) : (
+              <div className="text-muted-foreground">Nothing to preview yet.</div>
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
