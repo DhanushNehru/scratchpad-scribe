@@ -6,6 +6,7 @@ import { PlusCircle, Search, FileDown } from 'lucide-react';
 import jsPDF from 'jspdf';
 import { useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { ThemeToggle } from "@/components/theme/themeToggle";
 
 interface NotesSidebarProps {
   notes: Note[];
@@ -29,26 +30,33 @@ export function NotesSidebar({
   );
 
   return (
-    <aside className="w-screen md:w-80 border-r bg-secondary flex flex-col h-screen shadow-lg">
-      <div className="p-4 border-b bg-card rounded-b-xl shadow-sm">
-        <div className="flex items-center justify-between mb-2">
-          <h1 className="text-2xl font-bold text-foreground tracking-tight">Notes</h1>
-          <div className="flex gap-2">
+    <div className="w-screen md:w-80 border-r bg-secondary/30 flex flex-col h-screen">
+      <div className="p-4 border-b space-y-3">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-foreground">Notes</h1>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
             <Button
               onClick={() => {
                 if (!activeNoteId) return;
+
                 const activeNote = notes.find(note => note.id === activeNoteId);
                 if (!activeNote) return;
+
                 const doc = new jsPDF();
                 const pageWidth = doc.internal.pageSize.getWidth();
                 const margin = 10;
                 const contentWidth = pageWidth - (margin * 2);
+
                 doc.setFontSize(16);
                 doc.text(activeNote.title || 'Untitled Note', margin, margin);
+
                 doc.setFontSize(12);
                 const contentLines = doc.splitTextToSize(activeNote.content, contentWidth);
+
                 let yOffset = margin + 10;
                 const lineHeight = 7;
+
                 contentLines.forEach((line: string) => {
                   if (yOffset > doc.internal.pageSize.getHeight() - margin) {
                     doc.addPage();
@@ -57,6 +65,7 @@ export function NotesSidebar({
                   doc.text(line, margin, yOffset);
                   yOffset += lineHeight;
                 });
+
                 doc.save(`${activeNote.title || 'note'}.pdf`);
               }}
               size="icon"
