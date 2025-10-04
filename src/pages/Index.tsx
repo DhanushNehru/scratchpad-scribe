@@ -40,6 +40,7 @@ const Index = () => {
             activeNoteId={activeNoteId}
             onSelectNote={setActiveNoteId}
             onCreateNote={handleCreateNote}
+            onDeleteNote={handleDeleteNote}
           />
           <main className="flex-1 overflow-hidden">
             {activeNote ? (
@@ -84,6 +85,7 @@ const Index = () => {
               activeNoteId={activeNoteId}
               onSelectNote={setActiveNoteId}
               onCreateNote={handleCreateNote}
+              onDeleteNote={handleDeleteNote}
             />
           )}
         </main>
