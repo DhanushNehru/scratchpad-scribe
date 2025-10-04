@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Note, formatTimestamp, getRelativeTime } from '@/types/note';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Trash2, Calendar, Clock } from 'lucide-react';
 import {
@@ -25,21 +24,57 @@ interface NoteEditorProps {
 export function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
   const [title, setTitle] = useState(note.title);
   const [content, setContent] = useState(note.content);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const timeoutRef = useRef<NodeJS.Timeout>();
+  const [alignmentCycle, setAlignmentCycle] = useState(0);
 
   useEffect(() => {
-    setTitle(note.title);
-    setContent(note.content);
-  }, [note.id, note.title, note.content]);
+  setTitle(note.title);
+  setContent(note.content);
+  if (contentRef.current) {
+    contentRef.current.innerHTML = note.content || '<br>';
+  }
+}, [note.id]); 
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (title !== note.title || content !== note.content) {
-        onUpdate(note.id, { title, content });
+
+  const handleInput = () => {
+    clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => {
+      if (contentRef.current) {
+        onUpdate(note.id, { title, content: contentRef.current.innerHTML });
       }
     }, 500);
+  };
 
-    return () => clearTimeout(timer);
-  }, [title, content, note.id, note.title, note.content, onUpdate]);
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.ctrlKey) {
+      switch (e.key) {
+        case 'b':
+          e.preventDefault();
+          document.execCommand('bold');
+          break;
+        case 'i':
+          e.preventDefault();
+          document.execCommand('italic');
+          break;
+        case 'u':
+          e.preventDefault();
+          document.execCommand('underline');
+          break;
+        case 'j':
+          e.preventDefault();
+          setAlignmentCycle((prev) => {
+            const next = (prev + 1) % 3;
+            if (next === 0) document.execCommand('justifyLeft');
+            else if (next === 1) document.execCommand('justifyCenter');
+            else document.execCommand('justifyRight');
+            return next;
+          });
+          break;
+      }
+    }
+  };
+
 
   return (
    <div className="flex flex-col h-full">
@@ -85,11 +120,15 @@ export function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
             <span>Edited {getRelativeTime(note.updatedAt)}</span>
           </div>
         </div>
-      <Textarea
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        className="flex-1 resize-none border-none shadow-none focus-visible:ring-0 text-base leading-relaxed"
-        placeholder="Start writing..."
+      <div
+        ref={contentRef}
+        contentEditable
+        onInput={handleInput}
+        onKeyDown={handleKeyDown}
+        className="flex-1 resize-none border-none shadow-none focus-visible:ring-0 text-base leading-relaxed outline-none px-0"
+        style={{ direction: 'ltr', whiteSpace: 'pre-wrap', textAlign: 'left', minHeight: '200px', unicodeBidi: 'embed' }}
+        lang="en"
+        data-placeholder="Start writing..."
       />
     </div>
   );
