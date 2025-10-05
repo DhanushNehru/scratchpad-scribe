@@ -3,11 +3,6 @@ import { useNotes } from '@/hooks/useNotes';
 import { NotesSidebar } from '@/components/NotesSidebar';
 import { NoteEditor } from '@/components/NoteEditor';
 import { FileText, ArrowLeft } from 'lucide-react';
-import { useState, useEffect } from "react";
-import { useNotes } from "@/hooks/useNotes";
-import { NotesSidebar } from "@/components/NotesSidebar";
-import { NoteEditor } from "@/components/NoteEditor";
-import { FileText, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 const Index = () => {
