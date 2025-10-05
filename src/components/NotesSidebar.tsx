@@ -114,7 +114,7 @@ export function NotesSidebar({
                 note={note}
                 isActive={note.id === activeNoteId}
                 onClick={() => onSelectNote(note.id)}
-                onDelete={onDelete}
+                onDelete={() => onDelete(note.id)}
               />
             ))
           )}
