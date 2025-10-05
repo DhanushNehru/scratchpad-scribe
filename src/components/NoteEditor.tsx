@@ -3,7 +3,8 @@ import { Note, formatTimestamp, getRelativeTime } from '@/types/note';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Trash2, Calendar, Clock } from 'lucide-react';
+import { Trash2, Calendar, Clock, Mic, MicOff } from 'lucide-react';
+import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,11 +26,29 @@ interface NoteEditorProps {
 export function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
   const [title, setTitle] = useState(note.title);
   const [content, setContent] = useState(note.content);
+  
+  // Voice-to-text functionality
+  const {
+    transcript,
+    isListening,
+    hasRecognitionSupport,
+    startListening,
+    stopListening,
+    resetTranscript,
+  } = useSpeechRecognition();
 
   useEffect(() => {
     setTitle(note.title);
     setContent(note.content);
   }, [note.id, note.title, note.content]);
+
+  // Handle voice transcript
+  useEffect(() => {
+    if (transcript) {
+      setContent(prev => prev + (prev ? ' ' : '') + transcript);
+      resetTranscript();
+    }
+  }, [transcript, resetTranscript]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -41,6 +60,14 @@ export function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
     return () => clearTimeout(timer);
   }, [title, content, note.id, note.title, note.content, onUpdate]);
 
+  const handleVoiceToggle = () => {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
+    }
+  };
+
   return (
    <div className="flex flex-col h-full">
         <div className="flex items-center justify-between">
@@ -50,7 +77,19 @@ export function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
             className="text-2xl font-semibold border-none shadow-none focus-visible:ring-0 px-0"
             placeholder="Note title..."
           />
-          <AlertDialog>
+          <div className="flex items-center gap-2">
+            {hasRecognitionSupport && (
+              <Button
+                variant={isListening ? "destructive" : "ghost"}
+                size="icon"
+                onClick={handleVoiceToggle}
+                title={isListening ? "Stop voice input" : "Start voice input"}
+                className={isListening ? "animate-pulse" : ""}
+              >
+                {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+              </Button>
+            )}
+            <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="ghost" size="icon" className="text-destructive hover:text-white" title="Delete Note">
                 <Trash2 className="h-5 w-5" />
@@ -71,7 +110,16 @@ export function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
+          </div>
         </div>
+
+        {/* Voice Recording Indicator */}
+        {isListening && (
+          <div className="flex items-center gap-2 py-2 px-3 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-md mb-3">
+            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+            <span className="text-sm text-red-700 dark:text-red-300">Recording... Say "period" for punctuation</span>
+          </div>
+        )}
 
         {/* Timestamp Display */}
         <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -89,7 +137,7 @@ export function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
         value={content}
         onChange={(e) => setContent(e.target.value)}
         className="flex-1 resize-none border-none shadow-none focus-visible:ring-0 text-base leading-relaxed"
-        placeholder="Start writing..."
+        placeholder="Start writing or click the microphone to use voice input..."
       />
     </div>
   );
