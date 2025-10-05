@@ -28,8 +28,6 @@ export function NotesSidebar({
   const path = useLocation()?.pathname
   const deletePage = path === '/recycle-bin'
 
-  console.log(notes)
-  console.log(activeNoteId)
 
   const filteredNotes = notes.filter(
     (note) =>
