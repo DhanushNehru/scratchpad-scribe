@@ -59,8 +59,9 @@ export function NoteCard({ note, isActive, onClick, onDelete }: NoteCardProps) {
             <Button
               variant="ghost"
               size="icon"
-              className="text-destructive hover:text-destructive"
+              className="text-destructive hover:text-white"
               onClick={(e) => e.stopPropagation()} // prevent opening editor
+              title = "Delete Note"
             >
               <Trash2 className="h-5 w-5" />
             </Button>
