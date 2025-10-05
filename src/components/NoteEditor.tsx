@@ -52,7 +52,7 @@ export function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
           />
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+              <Button variant="ghost" size="icon" className="text-destructive hover:text-white" title="Delete Note">
                 <Trash2 className="h-5 w-5" />
               </Button>
             </AlertDialogTrigger>
