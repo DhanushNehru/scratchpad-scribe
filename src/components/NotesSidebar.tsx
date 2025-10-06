@@ -81,6 +81,7 @@ export function NotesSidebar({
                   size="icon"
                   variant="outline"
                   className="hover:bg-secondary"
+                  title="Export as PDF"
                 >
                   <FileDown className="h-5 w-5" />
                 </Button>
