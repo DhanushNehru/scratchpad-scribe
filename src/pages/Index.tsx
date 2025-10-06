@@ -1,9 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useNotes } from '@/hooks/useNotes';
-import { NotesSidebar } from '@/components/NotesSidebar';
-import { NoteEditor } from '@/components/NoteEditor';
-import { FileText, ArrowLeft } from 'lucide-react';
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNotes } from "@/hooks/useNotes";
 import { NotesSidebar } from "@/components/NotesSidebar";
 import { NoteEditor } from "@/components/NoteEditor";
@@ -46,17 +41,20 @@ const Index = () => {
     }
   };
 
-  const handleDuplicateNote = useCallback((id: string) => {
-    const newId = duplicateNote(id);
-    if (newId) setActiveNoteId(newId);
-  }, [duplicateNote]);
+  const handleDuplicateNote = useCallback(
+    (id: string) => {
+      const newId = duplicateNote(id);
+      if (newId) setActiveNoteId(newId);
+    },
+    [duplicateNote]
+  );
 
   // Keyboard shortcut: Ctrl/Cmd + D to duplicate active note
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+      const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
       const metaKey = isMac ? e.metaKey : e.ctrlKey;
-      if (metaKey && e.key.toLowerCase() === 'd') {
+      if (metaKey && e.key.toLowerCase() === "d") {
         e.preventDefault();
         if (activeNoteId) {
           handleDuplicateNote(activeNoteId);
@@ -64,8 +62,8 @@ const Index = () => {
       }
     };
 
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
   }, [activeNoteId, notes, handleDuplicateNote]);
   const navigateNotes = (direction: "up" | "down") => {
     if (notes.length === 0) return;
@@ -91,14 +89,14 @@ const Index = () => {
         const key = event.key.toLowerCase();
 
         switch (key) {
-          case "k":{
+          case "k": {
             event.preventDefault();
             event.stopPropagation();
             handleCreateNote();
             toast.success("New note created");
             break;
           }
-          case "s":{
+          case "s": {
             event.preventDefault();
             event.stopPropagation();
             const currentNote = notes.find((note) => note.id === activeNoteId);
@@ -107,7 +105,7 @@ const Index = () => {
             }
             break;
           }
-          case "d":{
+          case "d": {
             event.preventDefault();
             event.stopPropagation();
             if (activeNoteId) {
@@ -116,19 +114,19 @@ const Index = () => {
             }
             break;
           }
-          case "f":{
+          case "f": {
             event.preventDefault();
             event.stopPropagation();
             window.dispatchEvent(new CustomEvent("focus-search"));
             break;
           }
-          case "arrowup":{
+          case "arrowup": {
             event.preventDefault();
             event.stopPropagation();
             navigateNotes("up");
             break;
           }
-          case "arrowdown":{
+          case "arrowdown": {
             event.preventDefault();
             event.stopPropagation();
             navigateNotes("down");
@@ -166,7 +164,12 @@ const Index = () => {
               role="region"
               aria-labelledby="shortcuts-heading"
             >
-              <div id="shortcuts-heading" className="font-semibold text-foreground mb-2 text-sm">Keyboard Shortcuts</div>
+              <div
+                id="shortcuts-heading"
+                className="font-semibold text-foreground mb-2 text-sm"
+              >
+                Keyboard Shortcuts
+              </div>
               <div className="space-y-1 text-muted-foreground">
                 <div className="flex items-center justify-between gap-4">
                   <span>New note</span>
