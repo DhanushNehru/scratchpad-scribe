@@ -27,8 +27,8 @@ export function NotesSidebar({
   onDelete,
 }: NotesSidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const path = useLocation()?.pathname
-  const deletePage = path === '/recycle-bin'
+  const path = useLocation()?.pathname;
+  const deletePage = path === '/recycle-bin';
 
 
   const filteredNotes = notes.filter(
