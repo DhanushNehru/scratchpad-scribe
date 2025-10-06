@@ -67,7 +67,8 @@ export function NoteCard({ note, isActive, onClick, onDelete, onDuplicate }: Not
               title="Duplicate note"
             >
               <Copy className="h-5 w-5" />
-            </Button>          )}
+            </Button>
+          )}
 
           <AlertDialog>
             <AlertDialogTrigger asChild>
