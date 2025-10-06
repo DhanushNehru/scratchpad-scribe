@@ -29,10 +29,34 @@ export function useNotes() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
   }, [notes]);
 
+  const getUniqueTitle = (baseTitle: string, excludeId?: string) => {
+    const escapedBase = baseTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp('^' + escapedBase + '(?: \\(([0-9]+)\\))?$');
+    let max = 0;
+    let hasExactMatch = false;
+    notes.forEach((n) => {
+      if (excludeId && n.id === excludeId) return;
+      const m = n.title.match(regex);
+      if (m) {
+        const num = m[1] ? parseInt(m[1], 10) : 0;
+        if (!isNaN(num)) {
+          if (num > max) max = num;
+          if (num === 0) hasExactMatch = true;
+        }
+      }
+    });
+
+    if (hasExactMatch || max > 0) {
+      return `${baseTitle} (${max + 1})`;
+    }
+    return baseTitle;
+  };
+
   const createNote = () => {
+    const title = getUniqueTitle('Untitled Note');
     const newNote: Note = {
       id: crypto.randomUUID(),
-      title: 'Untitled Note',
+      title,
       content: '',
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -43,11 +67,17 @@ export function useNotes() {
 
   const updateNote = (id: string, updates: Partial<Pick<Note, 'title' | 'content'>>) => {
     setNotes((prev) =>
-      prev.map((note) =>
-        note.id === id
-          ? { ...note, ...updates, updatedAt: new Date() }
-          : note
-      )
+      prev.map((note) => {
+        if (note.id === id) {
+          const updatedNote = { ...note, ...updates, updatedAt: new Date() };
+          // If title is being updated, ensure it's unique
+          if (updates.title !== undefined) {
+            updatedNote.title = getUniqueTitle(updates.title, id);
+          }
+          return updatedNote;
+        }
+        return note;
+      })
     );
   };
 
@@ -61,6 +91,39 @@ export function useNotes() {
         note.id === id ? { ...note, deleted: true } : note
       )
     );
+  }
+  
+  const duplicateNote = (id: string) => {
+    const newId = crypto.randomUUID();
+
+    setNotes((prev) => {
+      const idx = prev.findIndex((n) => n.id === id);
+      if (idx === -1) return prev;
+
+      const original = prev[idx];
+
+      // Determine base title (remove any existing numbering)
+      const baseTitle = original.title.replace(/\s*\(\d+\)$/, '');
+
+      // Get unique title for the duplicate
+      const newTitle = getUniqueTitle(baseTitle);
+
+      const duplicated: Note = {
+        ...original,
+        id: newId,
+        title: newTitle,
+        // Treat duplicated note as newly created/updated
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      // Insert duplicated note immediately after the original
+      const next = [...prev.slice(0, idx + 1), duplicated, ...prev.slice(idx + 1)];
+
+      return next;
+    });
+
+    return newId;
   };
 
   return {
@@ -69,5 +132,6 @@ export function useNotes() {
     updateNote,
     deleteNote,
     softDeleteNote
+    duplicateNote,
   };
 }

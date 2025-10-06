@@ -1,6 +1,6 @@
 import { Note, formatTimestamp, getRelativeTime } from '@/types/note';
 import { Card } from '@/components/ui/card';
-import { Calendar, Clock } from 'lucide-react';
+import { Calendar, Clock, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
 import {
@@ -20,12 +20,14 @@ interface NoteCardProps {
   isActive: boolean;
   onClick: () => void;
   onDelete: (id: string) => void;
+  onDuplicate?: (id: string) => void;
 }
 
-export function NoteCard({ note, isActive, onClick, onDelete }: NoteCardProps) {
-    const path = useLocation()?.pathname
-    const deletePage = path === '/recycle-bin'
+export function NoteCard({ note, isActive, onClick, onDelete }: NoteCardProps) {  
   
+export function NoteCard({ note, isActive, onClick, onDelete, onDuplicate }: NoteCardProps) {
+  const path = useLocation()?.pathname
+    const deletePage = path === '/recycle-bin'
   const preview = note.content.slice(0, 100) || 'No content';
 
   return (
@@ -54,39 +56,51 @@ export function NoteCard({ note, isActive, onClick, onDelete }: NoteCardProps) {
         </div>
 
       <div className="flex justify-center items-center">
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
+        <div className="flex gap-2 items-center">
+          {/* Duplicate button (optional) */}
+          {onDuplicate && (
             <Button
               variant="ghost"
               size="icon"
-              className="text-destructive hover:text-white"
-              onClick={(e) => e.stopPropagation()} // prevent opening editor
-              title = "Delete Note"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDuplicate(note.id);
+              }}
+              title="Duplicate note"
             >
-              <Trash2 className="h-5 w-5" />
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete Note</AlertDialogTitle>
-              <AlertDialogDescription>
-                { 
+              <Copy className="h-5 w-5" />
+            </Button>          )}
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-destructive hover:text-destructive/80"
+                onClick={(e) => e.stopPropagation()} // prevent opening editor
+              >
+                <Trash2 className="h-5 w-5" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Note</AlertDialogTitle>
+                <AlertDialogDescription>
+                  { 
                   deletePage ? "This note will be permanently deleted and cannot be recovered. Are you sure you want to continue?" :
                   "This note will be moved to the recycle bin and can be restored later. Are you sure you want to continue?"
                 }
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => onDelete(note.id)}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              >
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={() => onDelete(note.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </div>
     </Card>
   );
