@@ -24,8 +24,8 @@ interface NoteCardProps {
 }
 
 export function NoteCard({ note, isActive, onClick, onDelete, onDuplicate }: NoteCardProps) {
-  const path = useLocation()?.pathname
-    const deletePage = path === '/recycle-bin'
+  const path = useLocation()?.pathname;
+    const deletePage = path === '/recycle-bin';
   const preview = note.content.slice(0, 100) || 'No content';
 
   return (
