@@ -19,7 +19,7 @@ const Index = ({deletePage = false}: {deletePage?: boolean}) => {
 
   useEffect(() => {
     setActiveNoteId(null);
-  }, [deletePage])
+  }, [deletePage]);
 
   const handleCreateNote = () => {
     const newId = createNote();
