@@ -41,6 +41,11 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
+## Application Visuals
+
+A visual representation of the application interface.
+
+![Scratchpad Scribe Screenshot Placeholder](src/app-visual.png) 
 
 ## Need Help? Join Our Community
 
