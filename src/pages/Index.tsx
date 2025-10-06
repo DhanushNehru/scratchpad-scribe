@@ -6,8 +6,6 @@ import { FileText, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 const Index = ({deletePage = false}: {deletePage?: boolean}) => {
-  const { notes, createNote, updateNote, deleteNote, softDeleteNote } = useNotes();
-const Index = () => {
   const { notes, createNote, updateNote, deleteNote, duplicateNote, softDeleteNote } = useNotes();
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
