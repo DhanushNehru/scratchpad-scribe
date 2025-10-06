@@ -131,7 +131,7 @@ export function useNotes() {
     createNote,
     updateNote,
     deleteNote,
-    softDeleteNote
+    softDeleteNote,
     duplicateNote,
   };
 }
