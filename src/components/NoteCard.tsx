@@ -23,8 +23,6 @@ interface NoteCardProps {
   onDuplicate?: (id: string) => void;
 }
 
-export function NoteCard({ note, isActive, onClick, onDelete }: NoteCardProps) {  
-  
 export function NoteCard({ note, isActive, onClick, onDelete, onDuplicate }: NoteCardProps) {
   const path = useLocation()?.pathname
     const deletePage = path === '/recycle-bin'
