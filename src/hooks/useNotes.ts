@@ -85,6 +85,14 @@ export function useNotes() {
     setNotes((prev) => prev.filter((note) => note.id !== id));
   };
 
+  const softDeleteNote = (id: string) => {
+    setNotes((prev) =>
+      prev.map((note) =>
+        note.id === id ? { ...note, deleted: true } : note
+      )
+    );
+  }
+  
   const duplicateNote = (id: string) => {
     const newId = crypto.randomUUID();
 
@@ -123,6 +131,7 @@ export function useNotes() {
     createNote,
     updateNote,
     deleteNote,
+    softDeleteNote,
     duplicateNote,
   };
 }

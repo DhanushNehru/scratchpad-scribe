@@ -5,9 +5,8 @@ import { NoteEditor } from "@/components/NoteEditor";
 import { FileText, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
-const Index = () => {
-  const { notes, createNote, updateNote, deleteNote, duplicateNote } =
-    useNotes();
+const Index = ({deletePage = false}: {deletePage?: boolean}) => {
+  const { notes, createNote, updateNote, deleteNote, duplicateNote, softDeleteNote } = useNotes();
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -18,6 +17,10 @@ const Index = () => {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
+  useEffect(() => {
+    setActiveNoteId(null);
+  }, [deletePage]);
+
   const handleCreateNote = () => {
     const newId = createNote();
     setActiveNoteId(newId);
@@ -27,6 +30,12 @@ const Index = () => {
     deleteNote(id);
     if (activeNoteId === id) {
       setActiveNoteId(notes.length > 1 ? notes[0].id : null);
+    }
+  };
+  const handleSoftDeleteNote = (id: string) => {
+    softDeleteNote(id);
+    if (activeNoteId === id) {
+      setActiveNoteId(null);
     }
   };
 
@@ -144,7 +153,7 @@ const Index = () => {
             onSelectNote={setActiveNoteId}
             onCreateNote={handleCreateNote}
             onDuplicateNote={handleDuplicateNote}
-            onDelete={handleDeleteNote}
+            onDelete={ deletePage ? handleDeleteNote : handleSoftDeleteNote}
           />
           <main className="flex-1 overflow-hidden relative">
             {/* Keyboard Shortcuts Helper */}
@@ -193,7 +202,7 @@ const Index = () => {
                 <NoteEditor
                   note={activeNote}
                   onUpdate={updateNote}
-                  onDelete={handleDeleteNote}
+                  onDelete={ deletePage ? handleDeleteNote : handleSoftDeleteNote}
                 />
               </div>
             ) : (
@@ -222,7 +231,7 @@ const Index = () => {
               <NoteEditor
                 note={activeNote}
                 onUpdate={updateNote}
-                onDelete={handleDeleteNote}
+                onDelete={ deletePage ? handleDeleteNote : handleSoftDeleteNote}
               />
             </div>
           ) : (
@@ -232,7 +241,7 @@ const Index = () => {
               onSelectNote={setActiveNoteId}
               onCreateNote={handleCreateNote}
               onDuplicateNote={handleDuplicateNote}
-              onDelete={handleDeleteNote}
+              onDelete={ deletePage ? handleDeleteNote : handleSoftDeleteNote}
             />
           )}
         </main>
