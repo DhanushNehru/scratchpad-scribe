@@ -1,6 +1,6 @@
 import { Note, formatTimestamp, getRelativeTime } from '@/types/note';
 import { Card } from '@/components/ui/card';
-import { Calendar, Clock } from 'lucide-react';
+import { Calendar, Clock, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
 import {
@@ -20,9 +20,10 @@ interface NoteCardProps {
   isActive: boolean;
   onClick: () => void;
   onDelete: (id: string) => void;
+  onDuplicate?: (id: string) => void;
 }
 
-export function NoteCard({ note, isActive, onClick, onDelete }: NoteCardProps) {
+export function NoteCard({ note, isActive, onClick, onDelete, onDuplicate }: NoteCardProps) {
   const preview = note.content.slice(0, 100) || 'No content';
 
   return (
@@ -49,30 +50,43 @@ export function NoteCard({ note, isActive, onClick, onDelete }: NoteCardProps) {
             <Button
               variant="ghost"
               size="icon"
-              className="text-destructive hover:text-destructive"
-              onClick={(e) => e.stopPropagation()} // prevent opening editor
+              onClick={(e) => {
+                e.stopPropagation();
+                onDuplicate(note.id);
+              }}
+              title="Duplicate note"
             >
-              <Trash2 className="h-5 w-5" />
+              <Copy className="h-5 w-5" />
             </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete Note</AlertDialogTitle>
-              <AlertDialogDescription>
-                Are you sure you want to delete this note? This action cannot be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => onDelete(note.id)}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          )}
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-destructive hover:text-destructive/80"
+                onClick={(e) => e.stopPropagation()} // prevent opening editor
               >
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+                <Trash2 className="h-5 w-5" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Note</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete this note? This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={() => onDelete(note.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </div>
     </Card>
   );
