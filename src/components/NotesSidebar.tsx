@@ -84,17 +84,17 @@ export function NotesSidebar({
             </Button>
           </div>
         </div>
-        <div className="relative">
+        <div className="relative mt-2">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search notes..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
+            className="pl-9 rounded-lg bg-secondary/60 border border-border focus-visible:ring-2 focus-visible:ring-primary"
           />
         </div>
       </div>
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1 bg-secondary/50">
         <div className="p-4 space-y-2">
           {filteredNotes.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
@@ -107,13 +107,12 @@ export function NotesSidebar({
                 note={note}
                 isActive={note.id === activeNoteId}
                 onClick={() => onSelectNote(note.id)}
-                onDuplicate={onDuplicateNote ?? undefined}
-                onDelete={onDelete ?? (() => {})}
+                onDelete={onCreateNote} // TODO: Replace with actual delete logic if needed
               />
             ))
           )}
         </div>
       </ScrollArea>
-    </div>
+    </aside>
   );
 }

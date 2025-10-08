@@ -28,33 +28,25 @@ export function NoteCard({ note, isActive, onClick, onDelete, onDuplicate }: Not
 
   return (
     <Card
-      className={`p-4 cursor-pointer transition-all justify-between flex hover:shadow-md ${
-        isActive ? 'ring-2 ring-primary bg-accent/5' : ''
+      className={`p-4 rounded-xl cursor-pointer transition-all flex flex-col gap-2 shadow-sm border border-border hover:shadow-lg ${
+        isActive ? 'ring-2 ring-primary bg-accent/10 border-primary' : 'bg-card'
       }`}
       onClick={onClick}
     >
-      <div className="flex flex-col">
-        <h3 className="font-semibold text-foreground mb-1 truncate font-serif">
+      <div className="flex flex-col gap-1">
+        <h3 className="font-semibold text-lg text-foreground truncate font-serif">
           {note.title || 'Untitled Note'}
         </h3>
-        
-        {/* Timestamp Display */}
-        <div className="flex flex-col gap-1 pt-2 border-t border-border/50">
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Calendar className="w-3 h-3" />
-            <span>Created: {formatTimestamp(note.createdAt)}</span>
-          </div>
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Clock className="w-3 h-3" />
-            <span>Edited {getRelativeTime(note.updatedAt)}</span>
-          </div>
-        </div>
-        </div>
-
-      <div className="flex justify-center items-center">
-        <div className="flex gap-2 items-center">
-          {/* Duplicate button (optional) */}
-          {onDuplicate && (
+        <p className="text-xs text-muted-foreground font-sans">
+          {formatDistanceToNow(note.updatedAt, { addSuffix: true })}
+        </p>
+      </div>
+      <p className="text-sm text-muted-foreground truncate mb-2">
+        {preview}
+      </p>
+      <div className="flex justify-end items-center mt-auto">
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
             <Button
               variant="ghost"
               size="icon"

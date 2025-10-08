@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
-import { useNotes } from "@/hooks/useNotes";
-import { NotesSidebar } from "@/components/NotesSidebar";
-import { NoteEditor } from "@/components/NoteEditor";
-import { FileText, ArrowLeft } from "lucide-react";
-import { toast } from "sonner";
+
+import { useState, useEffect } from 'react';
+import { useNotes } from '@/hooks/useNotes';
+import { NotesSidebar } from '@/components/NotesSidebar';
+import { NoteEditor } from '@/components/NoteEditor';
+import { FileText, ArrowLeft } from 'lucide-react';
 
 const Index = () => {
   const { notes, createNote, updateNote, deleteNote, duplicateNote } =
@@ -14,8 +14,8 @@ const Index = () => {
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   const handleCreateNote = () => {
@@ -137,7 +137,7 @@ const Index = () => {
     <div className="flex h-screen overflow-hidden bg-background">
       {/* Desktop Layout */}
       {!isMobile && (
-        <>
+        <div className="flex w-full h-full">
           <NotesSidebar
             notes={notes}
             activeNoteId={activeNoteId}
@@ -146,50 +146,9 @@ const Index = () => {
             onDuplicateNote={handleDuplicateNote}
             onDelete={handleDeleteNote}
           />
-          <main className="flex-1 overflow-hidden relative">
-            {/* Keyboard Shortcuts Helper */}
-            <div
-              className=" hidden md:block absolute bottom-4 right-4 bg-card border border-border rounded-lg p-3 shadow-lg text-xs z-10"
-              role="region"
-              aria-labelledby="shortcuts-heading"
-            >
-              <div
-                id="shortcuts-heading"
-                className="font-semibold text-foreground mb-2 text-sm"
-              >
-                Keyboard Shortcuts
-              </div>
-              <div className="space-y-1 text-muted-foreground">
-                <div className="flex items-center justify-between gap-4">
-                  <span>New note</span>
-                  <kbd className="px-2 py-0.5 bg-muted rounded border border-border font-mono">
-                    Cmd/Ctrl+K
-                  </kbd>
-                </div>
-                <div className="flex items-center justify-between gap-4">
-                  <span>Save note</span>
-                  <kbd className="px-2 py-0.5 bg-muted rounded border border-border font-mono">
-                    Cmd/Ctrl+S
-                  </kbd>
-                </div>
-                <div className="flex items-center justify-between gap-4">
-                  <span>Delete note</span>
-                  <kbd className="px-2 py-0.5 bg-muted rounded border border-border font-mono">
-                    Cmd/Ctrl+D
-                  </kbd>
-                </div>
-
-                <div className="flex items-center justify-between gap-4">
-                  <span>Navigate</span>
-                  <kbd className="px-2 py-0.5 bg-muted rounded border border-border font-mono">
-                    Cmd/Ctrl+↑↓
-                  </kbd>
-                </div>
-              </div>
-            </div>
-
+          <main className="flex-1 flex items-center justify-center bg-card">
             {activeNote ? (
-              <div className="h-full p-8">
+              <div className="w-full max-w-2xl h-full p-8 mx-auto">
                 <NoteEditor
                   note={activeNote}
                   onUpdate={updateNote}
@@ -205,17 +164,17 @@ const Index = () => {
               </div>
             )}
           </main>
-        </>
+        </div>
       )}
-
       {/* Mobile Layout */}
       {isMobile && (
-        <main className="flex-1 overflow-hidden">
+        <main className="flex-1 overflow-hidden bg-card">
           {activeNote ? (
-            <div className="h-full p-4">
+            <div className="h-full p-4 max-w-xl mx-auto">
+              {/* Back button */}
               <button
                 onClick={() => setActiveNoteId(null)}
-                className="mb-4 flex items-center text-sm text-blue-600"
+                className="mb-4 flex items-center text-sm text-primary font-medium"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" /> Back
               </button>
