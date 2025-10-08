@@ -6,12 +6,15 @@ import { PlusCircle, Search, FileDown } from 'lucide-react';
 import jsPDF from 'jspdf';
 import { useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { ThemeToggle } from "@/components/theme/themeToggle";
 
 interface NotesSidebarProps {
   notes: Note[];
   activeNoteId: string | null;
   onSelectNote: (id: string) => void;
   onCreateNote: () => void;
+  onDuplicateNote?: (id: string) => void;
+  onDelete?: (id: string) => void;
 }
 
 export function NotesSidebar({
@@ -19,6 +22,8 @@ export function NotesSidebar({
   activeNoteId,
   onSelectNote,
   onCreateNote,
+  onDuplicateNote,
+  onDelete,
 }: NotesSidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -33,28 +38,29 @@ export function NotesSidebar({
       <div className="p-4 border-b space-y-3">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-foreground">Notes</h1>
-           <div className="flex gap-2">
+          <div className="flex items-center gap-2">
+            <ThemeToggle/>
             <Button
               onClick={() => {
                 if (!activeNoteId) return;
-                
+
                 const activeNote = notes.find(note => note.id === activeNoteId);
                 if (!activeNote) return;
-                
+
                 const doc = new jsPDF();
                 const pageWidth = doc.internal.pageSize.getWidth();
                 const margin = 10;
                 const contentWidth = pageWidth - (margin * 2);
-                
+
                 doc.setFontSize(16);
                 doc.text(activeNote.title || 'Untitled Note', margin, margin);
-                
+
                 doc.setFontSize(12);
                 const contentLines = doc.splitTextToSize(activeNote.content, contentWidth);
-                
+
                 let yOffset = margin + 10;
                 const lineHeight = 7;
-                
+
                 contentLines.forEach((line: string) => {
                   if (yOffset > doc.internal.pageSize.getHeight() - margin) {
                     doc.addPage();
@@ -63,16 +69,17 @@ export function NotesSidebar({
                   doc.text(line, margin, yOffset);
                   yOffset += lineHeight;
                 });
-                
+
                 doc.save(`${activeNote.title || 'note'}.pdf`);
               }}
               size="icon"
               variant="outline"
               className="hover:bg-secondary"
+              title="Export as PDF"
             >
               <FileDown className="h-5 w-5" />
             </Button>
-            <Button onClick={onCreateNote} size="icon" variant="default">
+            <Button onClick={onCreateNote} size="icon" variant="default" title="Create Note">
               <PlusCircle className="h-5 w-5" />
             </Button>
           </div>
@@ -100,6 +107,8 @@ export function NotesSidebar({
                 note={note}
                 isActive={note.id === activeNoteId}
                 onClick={() => onSelectNote(note.id)}
+                onDuplicate={onDuplicateNote ?? undefined}
+                onDelete={onDelete ?? (() => {})}
               />
             ))
           )}
