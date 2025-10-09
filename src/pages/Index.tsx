@@ -6,7 +6,7 @@ import { FileText, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 const Index = () => {
-  const { notes, createNote, updateNote, deleteNote, duplicateNote } =
+  const { notes, createNote, updateNote, deleteNote, duplicateNote, toggleImportant } =
     useNotes();
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
@@ -71,10 +71,13 @@ const Index = () => {
     }
   };
 
-  // Keyboard shortcuts - handles all shortcuts directly
+  // Enhanced Keyboard shortcuts - handles all shortcuts directly
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.ctrlKey || event.metaKey) {
+      const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
+      const metaKey = isMac ? event.metaKey : event.ctrlKey;
+      
+      if (metaKey) {
         const key = event.key.toLowerCase();
 
         switch (key) {
@@ -82,7 +85,14 @@ const Index = () => {
             event.preventDefault();
             event.stopPropagation();
             handleCreateNote();
-            toast.success("New note created");
+            toast.success("New note created (Ctrl/Cmd + K)");
+            break;
+          }
+          case "n": {
+            event.preventDefault();
+            event.stopPropagation();
+            handleCreateNote();
+            toast.success("New note created (Ctrl/Cmd + N)");
             break;
           }
           case "s": {
@@ -98,8 +108,17 @@ const Index = () => {
             event.preventDefault();
             event.stopPropagation();
             if (activeNoteId) {
+              handleDuplicateNote(activeNoteId);
+              toast.success("Note duplicated (Ctrl/Cmd + D)");
+            }
+            break;
+          }
+          case "delete": {
+            event.preventDefault();
+            event.stopPropagation();
+            if (activeNoteId) {
               handleDeleteNote(activeNoteId);
-              toast.success("Note deleted");
+              toast.success("Note deleted (Ctrl/Cmd + Delete)");
             }
             break;
           }
@@ -107,6 +126,7 @@ const Index = () => {
             event.preventDefault();
             event.stopPropagation();
             window.dispatchEvent(new CustomEvent("focus-search"));
+            toast.success("Search focused (Ctrl/Cmd + F)");
             break;
           }
           case "arrowup": {
@@ -121,6 +141,42 @@ const Index = () => {
             navigateNotes("down");
             break;
           }
+          case "1": {
+            event.preventDefault();
+            event.stopPropagation();
+            if (notes.length > 0) {
+              setActiveNoteId(notes[0].id);
+              toast.success("Switched to first note");
+            }
+            break;
+          }
+          case "i": {
+            event.preventDefault();
+            event.stopPropagation();
+            if (activeNoteId) {
+              toggleImportant(activeNoteId);
+              const currentNote = notes.find((note) => note.id === activeNoteId);
+              toast.success(currentNote?.isImportant ? "Removed from important" : "Marked as important");
+            }
+            break;
+          }
+        }
+      }
+
+      // Escape key to clear selection
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setActiveNoteId(null);
+        toast.success("Note selection cleared (Esc)");
+      }
+      
+      // Number keys for quick note selection (1-9)
+      if (event.key >= "1" && event.key <= "9" && !metaKey) {
+        const noteIndex = parseInt(event.key) - 1;
+        if (noteIndex < notes.length) {
+          event.preventDefault();
+          setActiveNoteId(notes[noteIndex].id);
+          toast.success(`Switched to note ${event.key}`);
         }
       }
     };
@@ -129,7 +185,7 @@ const Index = () => {
     return () => {
       document.removeEventListener("keydown", handleKeyDown, true);
     };
-  }, [notes, activeNoteId]);
+  }, [notes, activeNoteId, handleDuplicateNote, handleCreateNote, handleDeleteNote]);
 
   const activeNote = notes.find((note) => note.id === activeNoteId);
 
@@ -145,6 +201,7 @@ const Index = () => {
             onCreateNote={handleCreateNote}
             onDuplicateNote={handleDuplicateNote}
             onDelete={handleDeleteNote}
+            onToggleImportant={toggleImportant}
           />
           <main className="flex-1 overflow-hidden relative">
             {/* Keyboard Shortcuts Helper */}
@@ -163,7 +220,7 @@ const Index = () => {
                 <div className="flex items-center justify-between gap-4">
                   <span>New note</span>
                   <kbd className="px-2 py-0.5 bg-muted rounded border border-border font-mono">
-                    Cmd/Ctrl+K
+                    Cmd/Ctrl+K/N
                   </kbd>
                 </div>
                 <div className="flex items-center justify-between gap-4">
@@ -173,16 +230,45 @@ const Index = () => {
                   </kbd>
                 </div>
                 <div className="flex items-center justify-between gap-4">
-                  <span>Delete note</span>
+                  <span>Duplicate note</span>
                   <kbd className="px-2 py-0.5 bg-muted rounded border border-border font-mono">
                     Cmd/Ctrl+D
                   </kbd>
                 </div>
-
                 <div className="flex items-center justify-between gap-4">
-                  <span>Navigate</span>
+                  <span>Mark important</span>
                   <kbd className="px-2 py-0.5 bg-muted rounded border border-border font-mono">
-                    Cmd/Ctrl+↑↓
+                    Cmd/Ctrl+I
+                  </kbd>
+                </div>
+                <div className="flex items-center justify-between gap-4">
+                  <span>Delete note</span>
+                  <kbd className="px-2 py-0.5 bg-muted rounded border border-border font-mono">
+                    Cmd/Ctrl+Del
+                  </kbd>
+                </div>
+                <div className="flex items-center justify-between gap-4">
+                  <span>Search notes</span>
+                  <kbd className="px-2 py-0.5 bg-muted rounded border border-border font-mono">
+                    Cmd/Ctrl+F
+                  </kbd>
+                </div>
+                <div className="flex items-center justify-between gap-4">
+                  <span>Navigate notes</span>
+                  <kbd className="px-2 py-0.5 bg-muted rounded border border-border font-mono">
+                    ↑/↓
+                  </kbd>
+                </div>
+                <div className="flex items-center justify-between gap-4">
+                  <span>Quick select</span>
+                  <kbd className="px-2 py-0.5 bg-muted rounded border border-border font-mono">
+                    1-9
+                  </kbd>
+                </div>
+                <div className="flex items-center justify-between gap-4">
+                  <span>Clear selection</span>
+                  <kbd className="px-2 py-0.5 bg-muted rounded border border-border font-mono">
+                    Esc
                   </kbd>
                 </div>
               </div>
