@@ -15,6 +15,7 @@ interface NotesSidebarProps {
   onCreateNote: () => void;
   onDuplicateNote?: (id: string) => void;
   onDelete?: (id: string) => void;
+  onToggleImportant?: (id: string) => void;
 }
 
 export function NotesSidebar({
@@ -24,6 +25,7 @@ export function NotesSidebar({
   onCreateNote,
   onDuplicateNote,
   onDelete,
+  onToggleImportant,
 }: NotesSidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -109,6 +111,7 @@ export function NotesSidebar({
                 onClick={() => onSelectNote(note.id)}
                 onDuplicate={onDuplicateNote ?? undefined}
                 onDelete={onDelete ?? (() => {})}
+                onToggleImportant={onToggleImportant ?? undefined}
               />
             ))
           )}
