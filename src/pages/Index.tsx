@@ -179,12 +179,6 @@ const Index = () => {
                   </kbd>
                 </div>
                 <div className="flex items-center justify-between gap-4">
-                  <span>Save note</span>
-                  <kbd className="px-2 py-0.5 bg-muted rounded border border-border font-mono">
-                    Cmd/Ctrl+S
-                  </kbd>
-                </div>
-                <div className="flex items-center justify-between gap-4">
                   <span>Delete note</span>
                   <kbd className="px-2 py-0.5 bg-muted rounded border border-border font-mono">
                     Cmd/Ctrl+D

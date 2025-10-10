@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Trash2, Calendar, Clock, Save } from 'lucide-react';
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,7 +21,10 @@ import { toast } from "sonner";
 
 interface NoteEditorProps {
   note: Note;
-  onUpdate: (id: string, updates: Partial<Pick<Note, 'title' | 'content'>>) => void;
+  onUpdate: (
+    id: string,
+    updates: Partial<Pick<Note, "title" | "content">>
+  ) => void;
   onDelete: (id: string) => void;
 }
 

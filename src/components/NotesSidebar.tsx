@@ -1,12 +1,16 @@
-import { Note } from '@/types/note';
-import { NoteCard } from './NoteCard';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { PlusCircle, Search, FileDown } from 'lucide-react';
-import jsPDF from 'jspdf';
-import { useState } from 'react';
-import { ScrollArea } from '@/components/ui/scroll-area';
+// path: components/NotesSidebar.tsx
+import { Note } from "@/types/note";
+import { NoteCard } from "./NoteCard";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { PlusCircle, Search, FileDown, LogIn, LogOut } from "lucide-react";
+import jsPDF from "jspdf";
+import { useState } from "react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { ThemeToggle } from "@/components/theme/themeToggle";
+import { useCurrentUser } from "@/context/CurrentUserContext";
+import { AuthModal } from "@/components/ui/AuthModal";
+import { showToast } from "@/lib/toast";
 
 interface NotesSidebarProps {
   notes: Note[];
@@ -25,13 +29,62 @@ export function NotesSidebar({
   onDuplicateNote,
   onDelete,
 }: NotesSidebarProps) {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+
+  const { isLoggedIn, logout, user } = useCurrentUser(); // reactive to login/logout
 
   const filteredNotes = notes.filter(
     (note) =>
       note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       note.content.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleAuthAction = () => {
+    if (isLoggedIn) {
+      logout(); // logout instantly
+      showToast("Logged out successfully", "success");
+    } else {
+      setIsAuthOpen(true); // open modal
+    }
+  };
+
+  const handleLoginSuccess = (loggedInUser: { username?: string; email?: string }) => {
+    setIsAuthOpen(false);
+    showToast(`Welcome back, ${loggedInUser.username || loggedInUser.email}!`, "success");
+  };
+
+
+  const handleExportPDF = () => {
+    if (!activeNoteId) return;
+    const activeNote = notes.find((note) => note.id === activeNoteId);
+    if (!activeNote) return;
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 10;
+    const contentWidth = pageWidth - margin * 2;
+
+    doc.setFontSize(16);
+    doc.text(activeNote.title || "Untitled Note", margin, margin);
+
+    doc.setFontSize(12);
+    const contentLines = doc.splitTextToSize(activeNote.content, contentWidth);
+
+    let yOffset = margin + 10;
+    const lineHeight = 7;
+
+    contentLines.forEach((line: string) => {
+      if (yOffset > doc.internal.pageSize.getHeight() - margin) {
+        doc.addPage();
+        yOffset = margin;
+      }
+      doc.text(line, margin, yOffset);
+      yOffset += lineHeight;
+    });
+
+    doc.save(`${activeNote.title || "note"}.pdf`);
+  };
 
   return (
     <div className="w-screen md:w-80 border-r bg-secondary/30 flex flex-col h-screen">
@@ -94,11 +147,12 @@ export function NotesSidebar({
           />
         </div>
       </div>
+
       <ScrollArea className="flex-1">
         <div className="p-4 space-y-2">
           {filteredNotes.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              {searchQuery ? 'No notes found' : 'No notes yet. Create one!'}
+              {searchQuery ? "No notes found" : "No notes yet. Create one!"}
             </div>
           ) : (
             filteredNotes.map((note) => (
@@ -114,6 +168,39 @@ export function NotesSidebar({
           )}
         </div>
       </ScrollArea>
+
+      {/* Greeting + Login/Logout */}
+      <div className="p-4 border-t flex flex-col items-center gap-2">
+        {isLoggedIn && (
+          <div className="text-sm font-medium text-foreground">
+            Hello, {user?.username || user?.email}!
+          </div>
+        )}
+
+        <Button
+          onClick={handleAuthAction}
+          size="sm"
+          variant="outline"
+          className="w-full flex items-center justify-center gap-2"
+        >
+          {isLoggedIn ? (
+            <>
+              <LogOut className="h-4 w-4" /> Logout
+            </>
+          ) : (
+            <>
+              <LogIn className="h-4 w-4" /> Login
+            </>
+          )}
+        </Button>
+      </div>
+
+      {/* Auth modal */}
+      <AuthModal
+        isOpen={isAuthOpen}
+        onClose={() => setIsAuthOpen(false)}
+        onLoginSuccess={handleLoginSuccess} // pass callback
+      />
     </div>
   );
 }
