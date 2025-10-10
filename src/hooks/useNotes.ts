@@ -1,7 +1,18 @@
 import { useState, useEffect } from 'react';
 import { Note } from '@/types/note';
-
+import { toast } from "sonner";
+import { title } from 'process';
 const STORAGE_KEY = 'notes-app-data';
+
+//Add validation : Avanish
+
+
+function isValidNote(note: Note): boolean {
+  const trimmedTitle = note.title.trim().toLowerCase();
+  const trimmedContent = note.content.trim();
+  return trimmedTitle !== '' && trimmedContent !== '';
+}
+
 
 export function useNotes() {
   const [notes, setNotes] = useState<Note[]>([]);
@@ -26,7 +37,8 @@ export function useNotes() {
 
   // Save notes to localStorage whenever they change
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+    const validNotes = notes.filter(isValidNote);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(validNotes));
   }, [notes]);
 
   const getUniqueTitle = (baseTitle: string, excludeId?: string) => {
@@ -52,7 +64,13 @@ export function useNotes() {
     return baseTitle;
   };
 
-  const createNote = () => {
+  const createNote = (currentNote?: Note) => {
+
+    if (currentNote && !isValidNote(currentNote)) {
+      toast.warning('Please enter a valid title and non-empty content before creating a new note.');
+      return null; // Prevent creation
+    }
+
     const title = getUniqueTitle('Untitled Note');
     const newNote: Note = {
       id: crypto.randomUUID(),
@@ -66,6 +84,24 @@ export function useNotes() {
   };
 
   const updateNote = (id: string, updates: Partial<Pick<Note, 'title' | 'content'>>) => {
+
+    //Validate fro the emppty title ans empty content : Avanish
+
+    const trimmedTitle = updates.title?.trim();
+    const trimmedContent = updates.content?.trim();
+
+    if ((trimmedTitle !== undefined || trimmedContent !== undefined) && !isValidNote({
+      id,
+      title: trimmedTitle ?? '',
+      content: trimmedContent ?? '',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })
+    ) {
+      toast.warning('Please enter a valid title and non-empty content to update the note.');
+      return;
+    }
+
     setNotes((prev) =>
       prev.map((note) => {
         if (note.id === id) {
