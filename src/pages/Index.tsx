@@ -89,6 +89,18 @@ const Index = () => {
             event.preventDefault();
             event.stopPropagation();
             const currentNote = notes.find((note) => note.id === activeNoteId);
+
+            if (!currentNote) return;
+
+            const trimmedTitle = currentNote.title.trim();
+            const trimmedContent = currentNote.content.trim();
+
+            if (!trimmedTitle || !trimmedContent) {
+              toast.error("Cannot save: Please enter a valid title and non-empty content.");
+              return;
+            }
+
+           
             if (currentNote) {
               toast.success("Notes are saved automatically");
             }
