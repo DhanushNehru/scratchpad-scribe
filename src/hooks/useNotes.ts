@@ -118,11 +118,22 @@ export function useNotes() {
     return newId;
   };
 
+  const toggleImportant = (id: string) => {
+    setNotes((prev) =>
+      prev.map((note) =>
+        note.id === id
+          ? { ...note, isImportant: !note.isImportant, updatedAt: new Date() }
+          : note
+      )
+    );
+  };
+
   return {
     notes,
     createNote,
     updateNote,
     deleteNote,
     duplicateNote,
+    toggleImportant,
   };
 }

@@ -46,7 +46,7 @@ export function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-4">
         <Input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -55,28 +55,27 @@ export function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
         />
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-destructive hover:text-white"
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-8 w-8 md:h-10 md:w-10 text-destructive hover:text-white touch-manipulation" 
               title="Delete Note"
             >
-              <Trash2 className="h-5 w-5" />
+              <Trash2 className="h-4 w-4 md:h-5 md:w-5" />
             </Button>
           </AlertDialogTrigger>
-          <AlertDialogContent>
+          <AlertDialogContent className="max-w-md mx-4">
             <AlertDialogHeader>
               <AlertDialogTitle>Delete Note</AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to delete this note? This action cannot be
-                undone.
+                Are you sure you want to delete this note? This action cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => onDelete(note.id)}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+              <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={() => onDelete(note.id)} 
+                className="w-full sm:w-auto bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
                 Delete
               </AlertDialogAction>
@@ -85,22 +84,23 @@ export function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
         </AlertDialog>
       </div>
 
-      {/* Timestamp Display */}
-      <div className="flex items-center gap-4 text-sm text-muted-foreground pb-2">
+      {/* Timestamp Display with improved spacing */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-muted-foreground mb-6 px-1">
         <div className="flex items-center gap-1.5">
-          <Calendar className="w-4 h-4" />
-          <span>Created: {formatTimestamp(note.createdAt)}</span>
+          <Calendar className="w-4 h-4 flex-shrink-0" />
+          <span className="truncate">Created: {formatTimestamp(note.createdAt)}</span>
         </div>
-        <span className="text-muted-foreground/40">•</span>
+        <span className="text-muted-foreground/40 hidden sm:inline">•</span>
         <div className="flex items-center gap-1.5">
-          <Clock className="w-4 h-4" />
-          <span>Edited {getRelativeTime(note.updatedAt)}</span>
+          <Clock className="w-4 h-4 flex-shrink-0" />
+          <span className="truncate">Edited {getRelativeTime(note.updatedAt)}</span>
         </div>
       </div>
+      
       <Textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        className="flex-1 resize-none border-none shadow-none focus-visible:ring-0 text-base leading-relaxed"
+        className="flex-1 resize-none border-none shadow-none focus-visible:ring-0 text-base leading-relaxed px-1"
         placeholder="Start writing..."
       />
     </div>

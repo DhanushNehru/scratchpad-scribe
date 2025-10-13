@@ -4,6 +4,7 @@ export interface Note {
   content: string;
   createdAt: Date;
   updatedAt: Date;
+  isImportant?: boolean;
 }
 // Utility function to format timestamps
 export const formatTimestamp = (date: Date, locale: string = 'en-US'): string => {
