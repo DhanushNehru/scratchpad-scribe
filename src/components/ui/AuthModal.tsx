@@ -149,7 +149,7 @@ export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
           {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
           <button
             type="button"
-            className="text-blue-600 underline"
+            className="text-accent underline"
             onClick={() => {
               setIsLogin(!isLogin);
               setError(null);
