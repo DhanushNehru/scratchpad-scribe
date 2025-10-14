@@ -73,7 +73,7 @@ export function NoteCard({ note, isActive, onClick, onDelete, onDuplicate }: Not
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-destructive hover:text-destructive/80"
+                className="text-destructive hover:text-white"
                 onClick={(e) => e.stopPropagation()} // prevent opening editor
               >
                 <Trash2 className="h-5 w-5" />
