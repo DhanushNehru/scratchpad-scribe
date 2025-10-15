@@ -30,15 +30,26 @@ const Index = () => {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  const handleCreateNote = () => {
+  const handleCreateNote = useCallback(() => {
     const newId = createNote();
     setActiveNoteId(newId);
-  };
+  }, [createNote]);
 
   const handleDeleteNote = (id: string) => {
+    const deletedIndex = notes.findIndex((note) => note.id === id);
     deleteNote(id);
+
     if (activeNoteId === id) {
-      setActiveNoteId(notes.length > 1 ? notes[0].id : null);
+      const hasPrevious = deletedIndex > 0;
+      const hasNext = deletedIndex >= 0 && deletedIndex < notes.length - 1;
+
+      if (hasPrevious) {
+        setActiveNoteId(notes[deletedIndex - 1].id);
+      } else if (hasNext) {
+        setActiveNoteId(notes[deletedIndex + 1].id);
+      } else {
+        setActiveNoteId(null);
+      }
     }
   };
 
@@ -76,22 +87,25 @@ const Index = () => {
     }
   }, [activeNoteId, handleDuplicateNote]);
 
-  const navigateNotes = (direction: "up" | "down") => {
-    if (notes.length === 0) return;
+  const navigateNotes = useCallback(
+    (direction: "up" | "down") => {
+      if (notes.length === 0) return;
 
-    const currentIndex = notes.findIndex((note) => note.id === activeNoteId);
+      const currentIndex = notes.findIndex((note) => note.id === activeNoteId);
 
-    if (currentIndex === -1) {
-      setActiveNoteId(notes[0].id);
-      return;
-    }
+      if (currentIndex === -1) {
+        setActiveNoteId(notes[0].id);
+        return;
+      }
 
-    if (direction === "up" && currentIndex > 0) {
-      setActiveNoteId(notes[currentIndex - 1].id);
-    } else if (direction === "down" && currentIndex < notes.length - 1) {
-      setActiveNoteId(notes[currentIndex + 1].id);
-    }
-  };
+      if (direction === "up" && currentIndex > 0) {
+        setActiveNoteId(notes[currentIndex - 1].id);
+      } else if (direction === "down" && currentIndex < notes.length - 1) {
+        setActiveNoteId(notes[currentIndex + 1].id);
+      }
+    },
+    [notes, activeNoteId]
+  );
 
   // Keyboard shortcuts - handles all shortcuts directly
   useEffect(() => {
@@ -177,7 +191,7 @@ const Index = () => {
     return () => {
       document.removeEventListener("keydown", handleKeyDown, true);
     };
-  }, [notes, activeNoteId]);
+  }, [notes, activeNoteId, duplicateActiveNote, handleCreateNote, navigateNotes]);
 
   const activeNote = notes.find((note) => note.id === activeNoteId);
 
@@ -246,9 +260,15 @@ const Index = () => {
                   </div>
                   <div className="flex items-center justify-between gap-4">
                     <span>Duplicate note</span>
-                    <kbd className="px-2 py-0.5 bg-muted rounded border border-border font-mono">
-                      Ctrl+Shift+D
-                    </kbd>
+                    <div className="flex items-center gap-2">
+                      <kbd className="px-2 py-0.5 bg-muted rounded border border-border font-mono">
+                        Shift+D
+                      </kbd>
+                      <span className="text-muted-foreground">or</span>
+                      <kbd className="px-2 py-0.5 bg-muted rounded border border-border font-mono">
+                        Cmd/Ctrl+Shift+D
+                      </kbd>
+                    </div>
                   </div>
                   <div className="flex items-center justify-between gap-4">
                     <span>Navigate</span>
