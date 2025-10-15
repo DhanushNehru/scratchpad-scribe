@@ -69,6 +69,13 @@ const Index = () => {
     [duplicateNote]
   );
 
+  const duplicateActiveNote = useCallback(() => {
+    if (activeNoteId) {
+      handleDuplicateNote(activeNoteId);
+      toast.success("Note duplicated");
+    }
+  }, [activeNoteId, handleDuplicateNote]);
+
   const navigateNotes = (direction: "up" | "down") => {
     if (notes.length === 0) return;
 
@@ -147,10 +154,7 @@ const Index = () => {
           case "d": {
             event.preventDefault();
             event.stopPropagation();
-            if (activeNoteId) {
-              handleDuplicateNote(activeNoteId);
-              toast.success("Note duplicated");
-            }
+            duplicateActiveNote();
             break;
           }
         }
@@ -162,10 +166,7 @@ const Index = () => {
           case "d": {
             event.preventDefault();
             event.stopPropagation();
-            if (activeNoteId) {
-              handleDuplicateNote(activeNoteId);
-              toast.success("Note duplicated");
-            }
+            duplicateActiveNote();
             break;
           }
         }
