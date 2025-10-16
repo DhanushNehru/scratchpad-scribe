@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme/provider";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import { CurrentUserProvider } from "@/context/CurrentUserContext";
 
 const queryClient = new QueryClient();
 
