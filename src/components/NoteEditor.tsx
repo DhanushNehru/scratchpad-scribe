@@ -28,11 +28,29 @@ interface NoteEditorProps {
 export function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
   const [title, setTitle] = useState(note.title);
   const [content, setContent] = useState(note.content);
+  
+  // Voice-to-text functionality
+  const {
+    transcript,
+    isListening,
+    hasRecognitionSupport,
+    startListening,
+    stopListening,
+    resetTranscript,
+  } = useSpeechRecognition();
 
   useEffect(() => {
     setTitle(note.title);
     setContent(note.content);
   }, [note.id, note.title, note.content]);
+
+  // Handle voice transcript
+  useEffect(() => {
+    if (transcript) {
+      setContent(prev => prev + (prev ? ' ' : '') + transcript);
+      resetTranscript();
+    }
+  }, [transcript, resetTranscript]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -43,6 +61,14 @@ export function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
 
     return () => clearTimeout(timer);
   }, [title, content, note.id, note.title, note.content, onUpdate]);
+
+  const handleVoiceToggle = () => {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
+    }
+  };
 
   return (
     <div className="flex flex-col h-full">
@@ -101,7 +127,7 @@ export function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
         value={content}
         onChange={(e) => setContent(e.target.value)}
         className="flex-1 resize-none border-none shadow-none focus-visible:ring-0 text-base leading-relaxed"
-        placeholder="Start writing..."
+        placeholder="Start writing or click the microphone to use voice input..."
       />
     </div>
   );
