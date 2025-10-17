@@ -109,8 +109,7 @@ export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
           </h2>
           {/* underline */}
           <div
-            className="w-16 h-0.5 mx-auto my-2 rounded-full 
-  bg-gradient-to-r from-orange-500 via-orange-400 to-orange-100"
+            className="w-16 h-0.5 mx-auto my-2 rounded-full bg-gradient-to-r from-orange-500 via-orange-400 to-orange-100"
           ></div>
         </div>
 
