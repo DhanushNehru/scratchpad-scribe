@@ -175,16 +175,7 @@ const Index = () => {
       }
 
       // Handle Shift + key combinations (without Ctrl/Cmd)
-      if (isShift && !isCtrlOrMeta) {
-        switch (key) {
-          case "d": {
-            event.preventDefault();
-            event.stopPropagation();
-            duplicateActiveNote();
-            break;
-          }
-        }
-      }
+      // Removed duplicate Shift+D shortcut for duplicating notes.
     };
 
     document.addEventListener("keydown", handleKeyDown, true);
