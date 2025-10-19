@@ -27,9 +27,7 @@ export function NotesSidebar({
   activeNoteId,
   onSelectNote,
   onCreateNote,
-  onDuplicateNote,
-  onDelete,
-  onToggleImportant,
+  onDelete
 }: NotesSidebarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -163,9 +161,7 @@ export function NotesSidebar({
                 note={note}
                 isActive={note.id === activeNoteId}
                 onClick={() => onSelectNote(note.id)}
-                onDuplicate={onDuplicateNote ?? undefined}
-                onDelete={onDelete ?? (() => {})}
-                onToggleImportant={onToggleImportant ?? undefined}
+                onDelete={() => onDeleteNote(note.id)}
               />
             ))
           )}
