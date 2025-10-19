@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { X } from "lucide-react";
 import { useCurrentUser } from "@/context/CurrentUserContext";
+import { Eye, EyeOff } from "lucide-react";
+
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -16,6 +18,7 @@ export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -129,14 +132,24 @@ export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
             required
             className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-300 border-gray-300 dark:border-gray-600 transition-colors"
           />
-          <Input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Password"
-            required
-            className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-300 border-gray-300 dark:border-gray-600 transition-colors"
-          />
+          <div className="relative">
+   <Input
+    type={showPassword ? "text" : "password"}
+    value={password}
+    onChange={(e) => setPassword(e.target.value)}
+    placeholder="Password"
+    required
+    className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-300 border-gray-300 dark:border-gray-600 transition-colors pr-10"
+  />
+  <button
+    type="button"
+    onClick={() => setShowPassword(!showPassword)}
+    className="absolute right-3 top-2.5 text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white"
+  >
+    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+  </button>
+</div>
+
 
           {error && <div className="text-sm text-red-600">{error}</div>}
 
