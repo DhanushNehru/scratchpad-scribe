@@ -93,6 +93,7 @@ export function NotesSidebar({
           <div className="flex items-center gap-2">
             <ThemeToggle/>
             <Button
+              disabled={notes.length === 0 || !activeNoteId}
               onClick={() => {
                 if (!activeNoteId) return;
 
@@ -127,7 +128,7 @@ export function NotesSidebar({
               size="icon"
               variant="outline"
               className="hover:bg-secondary"
-              title="Export as PDF"
+              title={notes.length === 0 || !activeNoteId ? "Select a note to export" : "Export as PDF"}
             >
               <FileDown className="h-5 w-5" />
             </Button>
