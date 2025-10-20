@@ -160,7 +160,7 @@ export function NotesSidebar({
                 note={note}
                 isActive={note.id === activeNoteId}
                 onClick={() => onSelectNote(note.id)}
-                onDelete={() => onDeleteNote(note.id)}
+                onDelete={() => onDelete(note.id)}
               />
             ))
           )}
