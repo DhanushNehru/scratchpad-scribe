@@ -126,6 +126,11 @@ This repository is part of **Hacktoberfest 2025**!
 Your contributions here count towards your official Hacktoberfest goals.  
 So fork the repo, start contributing, and earn your swag! 🎉  
 
+## Application Visuals
+
+A visual representation of the application interface.
+
+![Scratchpad Scribe Screenshot Placeholder](src/app-visual.png) 
 
 ## Need Help? Join Our Community
 
