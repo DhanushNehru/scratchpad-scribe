@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { X, Eye, EyeOff } from "lucide-react";
 import { useCurrentUser } from "@/context/CurrentUserContext";
-import { Eye, EyeOff } from "lucide-react";
 
 
 interface AuthModalProps {
