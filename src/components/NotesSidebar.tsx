@@ -19,6 +19,7 @@ interface NotesSidebarProps {
   onCreateNote: () => void;
   onDuplicateNote?: (id: string) => void;
   onDelete?: (id: string) => void;
+  onToggleImportant?: (id: string) => void;
 }
 
 export function NotesSidebar({
