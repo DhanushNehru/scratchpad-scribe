@@ -14,6 +14,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge'; // Import Badge
 
 interface NoteCardProps {
   note: Note;
@@ -33,10 +34,22 @@ export function NoteCard({ note, isActive, onClick, onDelete, onDuplicate }: Not
       }`}
       onClick={onClick}
     >
-      <div className="flex flex-col">
+      <div className="flex flex-col flex-1 min-w-0">
         <h3 className="font-semibold text-foreground mb-1 truncate font-serif">
           {note.title || 'Untitled Note'}
         </h3>
+        
+        {/* Tags Display - NEW UI */}
+        {note.tags && note.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-2">
+            {note.tags.map(tag => (
+              // Display tag as [emoji] [text]
+              <Badge key={tag.label} variant="outline" className="text-xs px-1.5 py-0.5 font-normal border-primary/50 text-primary/80 dark:border-primary-foreground/20 dark:text-primary-foreground/80">
+                {tag.emoji} {tag.label}
+              </Badge>
+            ))}
+          </div>
+        )}
         
         {/* Timestamp Display */}
         <div className="flex flex-col gap-1 pt-2 border-t border-border/50">
@@ -49,7 +62,7 @@ export function NoteCard({ note, isActive, onClick, onDelete, onDuplicate }: Not
             <span>Edited {getRelativeTime(note.updatedAt)}</span>
           </div>
         </div>
-        </div>
+      </div>
 
       <div className="flex justify-center items-center">
         <div className="flex gap-2 items-center">
