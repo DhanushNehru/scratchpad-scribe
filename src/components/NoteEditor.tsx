@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Note, formatTimestamp, getRelativeTime, Tag } from "@/types/note";
+import { Note, formatTimestamp, getRelativeTime } from "@/types/note";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -25,11 +25,16 @@ import data from '@emoji-mart/data';
 // --- END: THIRD-PARTY EMOJI LIBRARY IMPORTS ---
 
 
+interface Tag {
+  emoji: string;
+  label: string;
+}
+
 interface NoteEditorProps {
-  note: Note;
+  note: Note & { tags?: Tag[] };
   onUpdate: (
     id: string,
-    updates: Partial<Pick<Note, "title" | "content" | "tags">>
+    updates: Partial<Pick<Note, "title" | "content"> & { tags?: Tag[] }>
   ) => void;
   onDelete: (id: string) => void;
 }
