@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNotes } from "@/hooks/useNotes";
 import { NotesSidebar } from "@/components/NotesSidebar";
 import { NoteEditor } from "@/components/NoteEditor";
-import { FileText, ArrowLeft } from "lucide-react";
+import { FileText, ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
 import { toast } from "sonner";
 
 const Index = () => {
@@ -10,6 +10,7 @@ const Index = () => {
     useNotes();
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState(true);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -152,17 +153,34 @@ const Index = () => {
           <main className="flex-1 overflow-hidden relative">
             {/* Keyboard Shortcuts Helper */}
             <div
-              className=" hidden md:block absolute bottom-4 right-4 bg-card border border-border rounded-lg p-3 shadow-lg text-xs z-10"
+              className=" hidden md:block absolute bottom-4 right-4 bg-card border border-border rounded-lg p-3 shadow-lg text-xs z-10 w-64"
               role="region"
               aria-labelledby="shortcuts-heading"
             >
               <div
                 id="shortcuts-heading"
-                className="font-semibold text-foreground mb-2 text-sm"
+                className={`font-semibold text-foreground text-sm flex justify-between items-center cursor-pointer ${
+                  isShortcutsOpen ? "mb-2" : "mb-0"
+                }`}
+                onClick={() => setIsShortcutsOpen(!isShortcutsOpen)}
+                aria-expanded={isShortcutsOpen}
+                aria-controls="shortcuts-content"
               >
-                Keyboard Shortcuts
+                <span>Keyboard Shortcuts</span>
+                {isShortcutsOpen ? (
+                  <ChevronDown className="h-4 w-4" />
+                ) : (
+                  <ChevronUp className="h-4 w-4" />
+                )}
               </div>
-              <div className="space-y-1 text-muted-foreground">
+              
+              <div
+                id="shortcuts-content"
+                className={`
+                  space-y-1 text-muted-foreground transition-all duration-500 ease-in-out overflow-hidden
+                  ${isShortcutsOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'} 
+                `}
+              >
                 <div className="flex items-center justify-between gap-4">
                   <span>New note</span>
                   <kbd className="px-2 py-0.5 bg-muted rounded border border-border font-mono">
@@ -181,7 +199,6 @@ const Index = () => {
                     Cmd/Ctrl+D
                   </kbd>
                 </div>
-
                 <div className="flex items-center justify-between gap-4">
                   <span>Navigate</span>
                   <kbd className="px-2 py-0.5 bg-muted rounded border border-border font-mono">
