@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { X } from "lucide-react";
+import { X, Eye, EyeOff } from "lucide-react";
 import { useCurrentUser } from "@/context/CurrentUserContext";
-import { Eye, EyeOff } from "lucide-react";
-
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -18,7 +16,9 @@ export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -28,6 +28,9 @@ export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
     setUsername("");
     setEmail("");
     setPassword("");
+    setConfirmPassword("");
+    setShowPassword(false);
+    setShowConfirmPassword(false);
     setError(null);
   };
 
@@ -51,6 +54,12 @@ export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
 
     if (!isLogin && username.trim().length === 0) {
       setError("Username cannot be empty.");
+      setBusy(false);
+      return;
+    }
+
+    if (!isLogin && password !== confirmPassword) {
+      setError("Passwords do not match.");
       setBusy(false);
       return;
     }
@@ -99,13 +108,11 @@ export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
             {isLogin ? "Welcome Back" : "Create Account"}
           </h2>
           {/* underline */}
-          <div className="w-16 h-0.5 mx-auto my-2 rounded-full 
-  bg-gradient-to-r from-orange-500 via-orange-400 to-orange-100">
-          </div>
-
+          <div
+            className="w-16 h-0.5 mx-auto my-2 rounded-full 
+  bg-gradient-to-r from-orange-500 via-orange-400 to-orange-100"
+          ></div>
         </div>
-
-
 
         <form onSubmit={handleSubmit} className="space-y-3">
           {/* subtitle */}
@@ -133,28 +140,55 @@ export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
             className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-300 border-gray-300 dark:border-gray-600 transition-colors"
           />
           <div className="relative">
-   <Input
-    type={showPassword ? "text" : "password"}
-    value={password}
-    onChange={(e) => setPassword(e.target.value)}
-    placeholder="Password"
-    required
-    className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-300 border-gray-300 dark:border-gray-600 transition-colors pr-10"
-  />
-  <button
-    type="button"
-    onClick={() => setShowPassword(!showPassword)}
-    className="absolute right-3 top-2.5 text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white"
-  >
-    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-  </button>
-</div>
+            <Input
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
+              required
+              className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-300 border-gray-300 dark:border-gray-600 transition-colors pr-10"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-gray-100"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
 
+          {!isLogin && (
+            <div className="relative">
+              <Input
+                type={showConfirmPassword ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm Password"
+                required={!isLogin}
+                className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-300 border-gray-300 dark:border-gray-600 transition-colors pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-gray-100"
+                aria-label={showConfirmPassword ? "Hide password confirmation" : "Show password confirmation"}
+              >
+                {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+          )}
 
           {error && <div className="text-sm text-red-600">{error}</div>}
 
           <Button type="submit" className="w-full" disabled={busy}>
-            {busy ? (isLogin ? "Logging in…" : "Signing up…") : isLogin ? "Login" : "Sign Up"}
+            {busy
+              ? isLogin
+                ? "Logging in…"
+                : "Signing up…"
+              : isLogin
+              ? "Login"
+              : "Sign Up"}
           </Button>
         </form>
 
