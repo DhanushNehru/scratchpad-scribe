@@ -64,6 +64,12 @@ npm install
 npm run dev
 ```
 
+## ⌨️ Keyboard Shortcuts
+
+- **Focus search**: `Ctrl + K` / `Cmd + K` or `Ctrl + F`
+- **New note**: `Ctrl + N` / `Cmd + N`
+
+
 ## 💡 How to Contribute
 
 We ❤️ contributions from the community!  

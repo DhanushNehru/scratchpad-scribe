@@ -4,6 +4,7 @@ export interface Note {
   content: string;
   createdAt: Date;
   updatedAt: Date;
+  tags?: { emoji: string; label: string }[];
 }
 // Utility function to format timestamps
 export const formatTimestamp = (date: Date, locale: string = 'en-US'): string => {
