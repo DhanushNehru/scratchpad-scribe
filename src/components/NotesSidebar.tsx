@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PlusCircle, Search, FileDown, LogIn, LogOut } from "lucide-react";
 import jsPDF from "jspdf";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ThemeToggle } from "@/components/theme/themeToggle";
 import { useCurrentUser } from "@/context/CurrentUserContext";
@@ -31,6 +32,7 @@ export function NotesSidebar({
 }: NotesSidebarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const { isLoggedIn, logout, user } = useCurrentUser(); // reactive to login/logout
 
@@ -51,6 +53,22 @@ export function NotesSidebar({
       return titleMatch || contentMatch || tagMatch;
     }
   );
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const meta = e.ctrlKey || e.metaKey;
+      if (meta && (e.key === "k" || e.key === "K" || e.key === "f" || e.key === "F")) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+      if (meta && (e.key === "n" || e.key === "N")) {
+        e.preventDefault();
+        onCreateNote();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onCreateNote]);
 
   const handleAuthAction = () => {
     if (isLoggedIn) {
@@ -90,7 +108,7 @@ export function NotesSidebar({
                 doc.text(activeNote.title || 'Untitled Note', margin, margin);
                 
                 doc.setFontSize(10);
-                const tagString = activeNote.tags.map(t => `${t.emoji} ${t.label}`).join(', ');
+                const tagString = (activeNote.tags ?? []).map(t => `${t.emoji} ${t.label}`).join(', ');
                 doc.text(`Tags: ${tagString}`, margin, margin + 5);
 
                 doc.setFontSize(12);
@@ -130,6 +148,7 @@ export function NotesSidebar({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"
+            ref={searchInputRef}
           />
         </div>
       </div>
