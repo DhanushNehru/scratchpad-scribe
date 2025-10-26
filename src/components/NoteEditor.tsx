@@ -143,12 +143,17 @@ export function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
         <Input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="text-2xl font-semibold border-none shadow-none focus-visible:ring-0 px-0"
+          className="text-2xl font-semibold border-none shadow-none focus-visible:ring-0 px-0 mb-2"
           placeholder="Note title..."
         />
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button variant="ghost" size="icon" className="text-destructive hover:text-white" title="Delete Note">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-destructive hover:text-white"
+              title="Delete Note"
+            >
               <Trash2 className="h-5 w-5" />
             </Button>
           </AlertDialogTrigger>
@@ -156,12 +161,16 @@ export function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
             <AlertDialogHeader>
               <AlertDialogTitle>Delete Note</AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to delete this note? This action cannot be undone.
+                Are you sure you want to delete this note? This action cannot be
+                undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={() => onDelete(note.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              <AlertDialogAction
+                onClick={() => onDelete(note.id)}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
                 Delete
               </AlertDialogAction>
             </AlertDialogFooter>
@@ -169,8 +178,102 @@ export function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
         </AlertDialog>
       </div>
 
+      {/* Tags Display and Editor */}
+      <div className="flex flex-col gap-2 pb-2 border-b border-border/50 dark:border-border/50">
+        <div className="flex flex-wrap items-center gap-2">
+          {tags.map((tag) => (
+            <Badge 
+              key={tag.label} 
+              variant="secondary" 
+              className="cursor-pointer group hover:bg-destructive/10 dark:hover:bg-destructive/10"
+              onClick={() => handleRemoveTag(tag.label)}
+            >
+              {tag.emoji} {tag.label}
+              <X className="w-3 h-3 ml-1 text-muted-foreground group-hover:text-destructive"/>
+            </Badge>
+          ))}
+        </div>
+        
+        {/* New Tag Input */}
+        <div className="flex items-center gap-1.5 pt-2">
+            {/* EMOJI PICKER INTEGRATION */}
+            <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+                <PopoverTrigger asChild>
+                    <Button 
+                        type="button" 
+                        variant="outline"
+                        size="icon"
+                        className="text-lg p-0 w-8 h-8 flex-shrink-0 relative"
+                        title="Select Emoji"
+                    >
+                        {/* Show selected emoji or a smile icon */}
+                        {newTagInput.emoji === '🏷️' ? <Smile className="w-4 h-4" /> : null}
+                        {/* Overlay the actual emoji if one is selected */}
+                        {newTagInput.emoji !== '🏷️' && 
+                            <span className="absolute text-base pointer-events-none">{newTagInput.emoji}</span>
+                        }
+                    </Button>
+                </PopoverTrigger>
+                {/* PopoverContent houses the library Picker component */}
+                <PopoverContent className="w-[300px] p-0" side="bottom" align="start">
+                    <Picker 
+                        data={data}
+                        onEmojiSelect={handleEmojiSelect}
+                        theme="auto" 
+                        previewPosition="none"
+                        // REMOVED: searchPosition="none" -> The search bar is now visible by default
+                        categories={['frequent', 'people', 'nature', 'food', 'activity', 'travel', 'objects', 'symbols']}
+                    />
+                </PopoverContent>
+            </Popover>
+            
+            <Input
+              value={newTagInput.label}
+              onChange={(e) => setNewTagInput({ ...newTagInput, label: e.target.value })}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddTag();
+                }
+              }}
+              placeholder="Add tag label..."
+              className="h-8 text-sm flex-1"
+              maxLength={30}
+            />
+            <Button 
+                size="sm" 
+                onClick={handleAddTag} 
+                disabled={newTagInput.label.trim() === '' || tags.length >= 5}
+                title={tags.length >= 5 ? "Max 5 tags allowed" : "Add Tag"}
+            >
+                Add Tag
+            </Button>
+        </div>
+
+        {/* Suggested Tags based on Content */}
+        {suggestedTags.length > 0 && tags.length < 5 && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <span>Suggestions:</span>
+                {suggestedTags.map((tag) => (
+                    <Badge 
+                        key={tag.label} 
+                        variant="secondary" 
+                        className="cursor-pointer hover:bg-primary/10 transition-colors"
+                        onClick={() => handleApplySuggestion(tag)}
+                        title={`Click to add ${tag.label} tag`}
+                    >
+                        {tag.emoji} {tag.label}
+                    </Badge>
+                ))}
+            </div>
+        )}
+
+        {tags.length >= 5 && <p className="text-xs text-muted-foreground text-right pt-1">Max 5 tags per note</p>}
+      </div>
+
+
       {/* Timestamp Display */}
-      <div className="flex items-center gap-4 text-sm text-muted-foreground my-2">
+      <div className="flex items-center gap-4 text-sm text-muted-foreground pb-2">
         <div className="flex items-center gap-1.5">
           <Calendar className="w-4 h-4" />
           <span>Created: {formatTimestamp(note.createdAt)}</span>
