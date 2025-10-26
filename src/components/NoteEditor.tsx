@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
-import { Note, formatTimestamp, getRelativeTime } from '@/types/note';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { Trash2, Calendar, Clock } from 'lucide-react';
+import { useState, useEffect, useMemo } from "react";
+import { Note, formatTimestamp, getRelativeTime } from "@/types/note";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Trash2, Calendar, Clock, X, Smile } from "lucide-react"; 
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,32 +14,128 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
+
+// --- START: THIRD-PARTY EMOJI LIBRARY IMPORTS ---
+import Picker from '@emoji-mart/react';
+import data from '@emoji-mart/data'; 
+// --- END: THIRD-PARTY EMOJI LIBRARY IMPORTS ---
+
+
+interface Tag {
+  emoji: string;
+  label: string;
+}
 
 interface NoteEditorProps {
-  note: Note;
-  onUpdate: (id: string, updates: Partial<Pick<Note, 'title' | 'content'>>) => void;
+  note: Note & { tags?: Tag[] };
+  onUpdate: (
+    id: string,
+    updates: Partial<Pick<Note, "title" | "content"> & { tags?: Tag[] }>
+  ) => void;
   onDelete: (id: string) => void;
 }
+
+const KEYWORD_SUGGESTIONS: { keyword: string, emoji: string, label: string }[] = [
+    { keyword: "bug", emoji: "🐛", label: "Bug" },
+    { keyword: "error", emoji: "🐞", label: "Issue" },
+    { keyword: "todo", emoji: "✅", label: "Task" },
+    { keyword: "fix", emoji: "🛠️", label: "Fix" },
+    { keyword: "plan", emoji: "📅", label: "Planning" },
+    { keyword: "idea", emoji: "💡", label: "Idea" },
+    { keyword: "concept", emoji: "🧠", label: "Concept" },
+    { keyword: "project", emoji: "🚀", label: "Project" },
+];
 
 export function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
   const [title, setTitle] = useState(note.title);
   const [content, setContent] = useState(note.content);
+  const [tags, setTags] = useState<Tag[]>(note.tags || []);
+  const [newTagInput, setNewTagInput] = useState<{ emoji: string; label: string }>({ emoji: '🏷️', label: '' });
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
   useEffect(() => {
     setTitle(note.title);
     setContent(note.content);
-  }, [note.id, note.title, note.content]);
+    setTags(note.tags || []); 
+  }, [note.id, note.title, note.content, note.tags]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (title !== note.title || content !== note.content) {
-        onUpdate(note.id, { title, content });
+      if (
+        title !== note.title || 
+        content !== note.content || 
+        JSON.stringify(tags) !== JSON.stringify(note.tags)
+      ) {
+        onUpdate(note.id, { title, content, tags });
       }
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [title, content, note.id, note.title, note.content, onUpdate]);
+  }, [title, content, tags, note.id, note.title, note.content, note.tags, onUpdate]);
+
+  const handleAddTag = () => {
+    const trimmedLabel = newTagInput.label.trim();
+    if (trimmedLabel !== '') {
+      const existing = tags.find(t => t.label.toLowerCase() === trimmedLabel.toLowerCase());
+      if (existing) {
+        setNewTagInput({ emoji: '🏷️', label: '' }); 
+        return;
+      }
+      
+      const tag: Tag = {
+          emoji: newTagInput.emoji,
+          label: trimmedLabel,
+      };
+      setTags([...tags, tag]);
+      setNewTagInput({ emoji: '🏷️', label: '' });
+    }
+  };
+
+  const handleRemoveTag = (label: string) => {
+    setTags(tags.filter(t => t.label !== label));
+  };
+  
+  const handleEmojiSelect = (emojiData: { native: string }) => {
+      setNewTagInput({ ...newTagInput, emoji: emojiData.native });
+      setIsPopoverOpen(false); 
+  };
+  
+  const getSuggestions = (noteContent: string, currentTags: Tag[]): Tag[] => {
+    if (!noteContent || currentTags.length >= 5) return [];
+
+    const lowerContent = noteContent.toLowerCase();
+    const existingLabels = new Set(currentTags.map(t => t.label.toLowerCase()));
+    const existingEmojis = new Set(currentTags.map(t => t.emoji));
+
+    const suggestions: Tag[] = [];
+
+    for (const { keyword, emoji, label } of KEYWORD_SUGGESTIONS) {
+      if (lowerContent.includes(keyword) && 
+          !existingLabels.has(label.toLowerCase()) && 
+          !existingEmojis.has(emoji)) 
+      {
+        suggestions.push({ emoji, label });
+        if (suggestions.length >= 3) break;
+      }
+    }
+
+    return suggestions;
+  };
+
+  const suggestedTags = useMemo(() => getSuggestions(content, tags), [content, tags]);
+
+  const handleApplySuggestion = (suggestion: Tag) => {
+    setTags(prev => {
+        const existing = prev.find(t => t.label === suggestion.label);
+        if (existing) return prev;
+        return [...prev, suggestion];
+    });
+  };
+
 
   return (
     <div className="flex flex-col h-full">

@@ -38,12 +38,12 @@ const Index = () => {
     [duplicateNote]
   );
 
-  // Keyboard shortcut: Ctrl/Cmd + D to duplicate active note
+  // Keyboard shortcut: Ctrl/Cmd + Shift + D to duplicate active note
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
       const metaKey = isMac ? e.metaKey : e.ctrlKey;
-      if (metaKey && e.key.toLowerCase() === "d") {
+      if (metaKey && e.shiftKey && e.key.toLowerCase() === "d") {
         e.preventDefault();
         if (activeNoteId) {
           handleDuplicateNote(activeNoteId);
@@ -95,11 +95,14 @@ const Index = () => {
             break;
           }
           case "d": {
-            event.preventDefault();
-            event.stopPropagation();
-            if (activeNoteId) {
-              handleDeleteNote(activeNoteId);
-              toast.success("Note deleted");
+            // Only delete if Shift is NOT pressed (Shift+D is for duplicate)
+            if (!event.shiftKey) {
+              event.preventDefault();
+              event.stopPropagation();
+              if (activeNoteId) {
+                handleDeleteNote(activeNoteId);
+                toast.success("Note deleted");
+              }
             }
             break;
           }
@@ -167,9 +170,9 @@ const Index = () => {
                   </kbd>
                 </div>
                 <div className="flex items-center justify-between gap-4">
-                  <span>Save note</span>
+                  <span>Duplicate note</span>
                   <kbd className="px-2 py-0.5 bg-muted rounded border border-border font-mono">
-                    Cmd/Ctrl+S
+                    Cmd/Ctrl+Shift+D
                   </kbd>
                 </div>
                 <div className="flex items-center justify-between gap-4">
