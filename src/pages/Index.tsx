@@ -2,15 +2,18 @@ import { useState, useEffect, useCallback } from "react";
 import { useNotes } from "@/hooks/useNotes";
 import { NotesSidebar } from "@/components/NotesSidebar";
 import { NoteEditor } from "@/components/NoteEditor";
-import { FileText, ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
+import { NoteCard } from "@/components/NoteCard";
+import { Button } from "@/components/ui/button";
+import { FileText, ArrowLeft, ChevronDown, ChevronUp, X } from "lucide-react";
 import { toast } from "sonner";
 
 const Index = () => {
-  const { notes, createNote, updateNote, deleteNote, duplicateNote } =
+  const { notes, createNote, updateNote, deleteNote, duplicateNote, togglePin, addAttachments, removeAttachment, getAttachmentBlob } =
     useNotes();
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(true);
+  const [showPinnedView, setShowPinnedView] = useState(false);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -38,6 +41,28 @@ const Index = () => {
     },
     [duplicateNote]
   );
+
+  // Sync active note with URL ?note= param
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const paramId = params.get('note');
+    if (paramId) {
+      const exists = notes.some(n => n.id === paramId);
+      if (exists) setActiveNoteId(paramId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (activeNoteId) {
+      params.set('note', activeNoteId);
+    } else {
+      params.delete('note');
+    }
+    const newRelativePathQuery = `${window.location.pathname}?${params.toString()}`.replace(/\?$/, '');
+    window.history.replaceState(null, '', newRelativePathQuery);
+  }, [activeNoteId]);
 
   // Keyboard shortcut: Ctrl/Cmd + Shift + D to duplicate active note
   useEffect(() => {
@@ -136,6 +161,7 @@ const Index = () => {
   }, [notes, activeNoteId]);
 
   const activeNote = notes.find((note) => note.id === activeNoteId);
+  const pinnedNotes = notes.filter(n => n.pinned);
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
@@ -149,6 +175,8 @@ const Index = () => {
             onCreateNote={handleCreateNote}
             onDuplicateNote={handleDuplicateNote}
             onDelete={handleDeleteNote}
+            onTogglePin={togglePin}
+            onOpenPinned={() => setShowPinnedView(true)}
           />
           <main className="flex-1 overflow-hidden relative">
             {/* Keyboard Shortcuts Helper */}
@@ -207,8 +235,44 @@ const Index = () => {
                 </div>
               </div>
             </div>
-
-            {activeNote ? (
+            {showPinnedView ? (
+              <div className="h-full p-8 relative">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="absolute top-6 left-6"
+                  onClick={() => setShowPinnedView(false)}
+                  title="Close pinned view"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+                <div className="flex items-center justify-center mb-8">
+                  <h2 className="text-xl font-semibold">Pinned notes</h2>
+                </div>
+                {pinnedNotes.length === 0 ? (
+                  <div className="flex items-center justify-center h-full text-muted-foreground">
+                    No pinned notes
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {pinnedNotes.map(note => (
+                      <NoteCard
+                        key={note.id}
+                        note={note}
+                        isActive={note.id === activeNoteId}
+                        onClick={() => {
+                          setActiveNoteId(note.id);
+                          setShowPinnedView(false);
+                        }}
+                        onDelete={handleDeleteNote}
+                        onDuplicate={handleDuplicateNote}
+                        onTogglePin={togglePin}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : activeNote ? (
               <div className="h-full p-8">
                 <NoteEditor
                   note={activeNote}
@@ -231,7 +295,35 @@ const Index = () => {
       {/* Mobile Layout */}
       {isMobile && (
         <main className="flex-1 overflow-hidden">
-          {activeNote ? (
+          {showPinnedView ? (
+            <div className="h-full p-4">
+              <Button
+                variant="outline"
+                size="icon"
+                className="mb-4"
+                onClick={() => setShowPinnedView(false)}
+                title="Close pinned view"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+              <div className="grid grid-cols-1 gap-3">
+                {notes.filter(n => n.pinned).map(note => (
+                  <NoteCard
+                    key={note.id}
+                    note={note}
+                    isActive={note.id === activeNoteId}
+                    onClick={() => {
+                      setActiveNoteId(note.id);
+                      setShowPinnedView(false);
+                    }}
+                    onDelete={handleDeleteNote}
+                    onDuplicate={handleDuplicateNote}
+                    onTogglePin={togglePin}
+                  />
+                ))}
+              </div>
+            </div>
+          ) : activeNote ? (
             <div className="h-full p-4">
               <button
                 onClick={() => setActiveNoteId(null)}
@@ -243,6 +335,17 @@ const Index = () => {
                 note={activeNote}
                 onUpdate={updateNote}
                 onDelete={handleDeleteNote}
+                onAddAttachments={addAttachments}
+                onRemoveAttachment={removeAttachment}
+                onGetAttachmentBlob={getAttachmentBlob}
+              />
+              <NoteEditor
+                note={activeNote}
+                onUpdate={updateNote}
+                onDelete={handleDeleteNote}
+                onAddAttachments={addAttachments}
+                onRemoveAttachment={removeAttachment}
+                onGetAttachmentBlob={getAttachmentBlob}
               />
             </div>
           ) : (
@@ -253,6 +356,7 @@ const Index = () => {
               onCreateNote={handleCreateNote}
               onDuplicateNote={handleDuplicateNote}
               onDelete={handleDeleteNote}
+              onTogglePin={togglePin}
             />
           )}
         </main>

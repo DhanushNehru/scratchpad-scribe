@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
-import { Note, formatTimestamp, getRelativeTime } from "@/types/note";
+import { Note, formatTimestamp, getRelativeTime, AttachmentMeta } from "@/types/note";
+import { showToast } from "@/lib/toast";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -34,9 +35,12 @@ interface NoteEditorProps {
   note: Note & { tags?: Tag[] };
   onUpdate: (
     id: string,
-    updates: Partial<Pick<Note, "title" | "content"> & { tags?: Tag[] }>
+    updates: Partial<Pick<Note, "title" | "content" | "attachments"> & { tags?: Tag[] }>
   ) => void;
   onDelete: (id: string) => void;
+  onAddAttachments?: (id: string, files: FileList | File[]) => Promise<void> | void;
+  onRemoveAttachment?: (id: string, attachmentId: string) => Promise<void> | void;
+  onGetAttachmentBlob?: (attachmentId: string) => Promise<Blob | undefined>;
 }
 
 const KEYWORD_SUGGESTIONS: { keyword: string, emoji: string, label: string }[] = [
@@ -50,7 +54,7 @@ const KEYWORD_SUGGESTIONS: { keyword: string, emoji: string, label: string }[] =
     { keyword: "project", emoji: "🚀", label: "Project" },
 ];
 
-export function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
+export function NoteEditor({ note, onUpdate, onDelete, onAddAttachments, onRemoveAttachment, onGetAttachmentBlob }: NoteEditorProps) {
   const [title, setTitle] = useState(note.title);
   const [content, setContent] = useState(note.content);
   const [tags, setTags] = useState<Tag[]>(note.tags || []);
@@ -102,6 +106,61 @@ export function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
   const handleEmojiSelect = (emojiData: { native: string }) => {
       setNewTagInput({ ...newTagInput, emoji: emojiData.native });
       setIsPopoverOpen(false); 
+  };
+
+  const triggerFileDialog = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.multiple = true;
+    input.accept = 'image/*,application/pdf';
+    // Hide input but attach to DOM to ensure reliable change event firing across browsers
+    input.style.position = 'fixed';
+    input.style.left = '-9999px';
+    input.style.width = '0';
+    input.style.height = '0';
+    input.style.opacity = '0';
+    document.body.appendChild(input);
+    input.onchange = async () => {
+      const files = input.files;
+      if (!files) return;
+      if (onAddAttachments) {
+        try {
+          await onAddAttachments(note.id, files);
+          showToast(`${files.length} file(s) attached.`, 'success');
+        } catch (e) {
+          showToast('Unable to attach selected file(s).', 'error');
+        }
+      }
+      // Clean up the input element
+      input.remove();
+    };
+    // Fallback cleanup in case user cancels selection (onchange won't fire)
+    setTimeout(() => {
+      if (document.body.contains(input)) {
+        input.remove();
+      }
+    }, 30000);
+    input.click();
+  };
+
+  const handleDownload = async (attachment: AttachmentMeta) => {
+    if (!onGetAttachmentBlob) return;
+    const blob = await onGetAttachmentBlob(attachment.id);
+    if (!blob) return;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = attachment.name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleRemove = async (attachment: AttachmentMeta) => {
+    if (onRemoveAttachment) {
+      await onRemoveAttachment(note.id, attachment.id);
+    }
   };
   
   const getSuggestions = (noteContent: string, currentTags: Tag[]): Tag[] => {
@@ -284,6 +343,32 @@ export function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
           <span>Edited {getRelativeTime(note.updatedAt)}</span>
         </div>
       </div>
+      {/* Attachments Section */}
+      <div className="mt-4 border-t pt-3">
+        <div className="flex items-center justify-between mb-2">
+          <div className="text-sm font-medium text-foreground">Attachments</div>
+          <Button size="sm" variant="outline" onClick={triggerFileDialog}>Add files</Button>
+        </div>
+        {note.attachments && note.attachments.length > 0 ? (
+          <div className="space-y-2">
+            {note.attachments.map(att => (
+              <div key={att.id} className="flex items-center justify-between text-sm bg-muted/40 rounded px-2 py-1">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="truncate max-w-[260px]" title={`${att.name} (${Math.round(att.size/1024)} KB)`}>{att.name}</span>
+                  <span className="text-muted-foreground text-xs">{Math.round(att.size/1024)} KB</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button size="sm" variant="ghost" onClick={() => handleDownload(att)}>Download</Button>
+                  <Button size="sm" variant="ghost" className="text-destructive" onClick={() => handleRemove(att)}>Remove</Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-xs text-muted-foreground">No attachments</div>
+        )}
+      </div>
+
       <Textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}

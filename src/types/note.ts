@@ -1,9 +1,25 @@
+export interface NoteTag {
+  emoji: string;
+  label: string;
+}
+
+export interface AttachmentMeta {
+  id: string; // key in IndexedDB
+  name: string;
+  type: string;
+  size: number;
+  createdAt: Date;
+}
+
 export interface Note {
   id: string;
   title: string;
   content: string;
   createdAt: Date;
   updatedAt: Date;
+  pinned?: boolean;
+  tags?: NoteTag[];
+  attachments?: AttachmentMeta[];
 }
 // Utility function to format timestamps
 export const formatTimestamp = (date: Date, locale: string = 'en-US'): string => {
