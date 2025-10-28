@@ -4,7 +4,7 @@ import { showToast } from "@/lib/toast";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Trash2, Calendar, Clock, X, Smile } from "lucide-react"; 
+import { Trash2, Calendar, Clock, X, Smile } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,7 +22,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 
 // --- START: THIRD-PARTY EMOJI LIBRARY IMPORTS ---
 import Picker from '@emoji-mart/react';
-import data from '@emoji-mart/data'; 
+import data from '@emoji-mart/data';
 // --- END: THIRD-PARTY EMOJI LIBRARY IMPORTS ---
 
 
@@ -44,14 +44,14 @@ interface NoteEditorProps {
 }
 
 const KEYWORD_SUGGESTIONS: { keyword: string, emoji: string, label: string }[] = [
-    { keyword: "bug", emoji: "🐛", label: "Bug" },
-    { keyword: "error", emoji: "🐞", label: "Issue" },
-    { keyword: "todo", emoji: "✅", label: "Task" },
-    { keyword: "fix", emoji: "🛠️", label: "Fix" },
-    { keyword: "plan", emoji: "📅", label: "Planning" },
-    { keyword: "idea", emoji: "💡", label: "Idea" },
-    { keyword: "concept", emoji: "🧠", label: "Concept" },
-    { keyword: "project", emoji: "🚀", label: "Project" },
+  { keyword: "bug", emoji: "🐛", label: "Bug" },
+  { keyword: "error", emoji: "🐞", label: "Issue" },
+  { keyword: "todo", emoji: "✅", label: "Task" },
+  { keyword: "fix", emoji: "🛠️", label: "Fix" },
+  { keyword: "plan", emoji: "📅", label: "Planning" },
+  { keyword: "idea", emoji: "💡", label: "Idea" },
+  { keyword: "concept", emoji: "🧠", label: "Concept" },
+  { keyword: "project", emoji: "🚀", label: "Project" },
 ];
 
 export function NoteEditor({ note, onUpdate, onDelete, onAddAttachments, onRemoveAttachment, onGetAttachmentBlob }: NoteEditorProps) {
@@ -64,14 +64,14 @@ export function NoteEditor({ note, onUpdate, onDelete, onAddAttachments, onRemov
   useEffect(() => {
     setTitle(note.title);
     setContent(note.content);
-    setTags(note.tags || []); 
+    setTags(note.tags || []);
   }, [note.id, note.title, note.content, note.tags]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       if (
-        title !== note.title || 
-        content !== note.content || 
+        title !== note.title ||
+        content !== note.content ||
         JSON.stringify(tags) !== JSON.stringify(note.tags)
       ) {
         onUpdate(note.id, { title, content, tags });
@@ -86,13 +86,13 @@ export function NoteEditor({ note, onUpdate, onDelete, onAddAttachments, onRemov
     if (trimmedLabel !== '') {
       const existing = tags.find(t => t.label.toLowerCase() === trimmedLabel.toLowerCase());
       if (existing) {
-        setNewTagInput({ emoji: '🏷️', label: '' }); 
+        setNewTagInput({ emoji: '🏷️', label: '' });
         return;
       }
-      
+
       const tag: Tag = {
-          emoji: newTagInput.emoji,
-          label: trimmedLabel,
+        emoji: newTagInput.emoji,
+        label: trimmedLabel,
       };
       setTags([...tags, tag]);
       setNewTagInput({ emoji: '🏷️', label: '' });
@@ -102,10 +102,10 @@ export function NoteEditor({ note, onUpdate, onDelete, onAddAttachments, onRemov
   const handleRemoveTag = (label: string) => {
     setTags(tags.filter(t => t.label !== label));
   };
-  
+
   const handleEmojiSelect = (emojiData: { native: string }) => {
-      setNewTagInput({ ...newTagInput, emoji: emojiData.native });
-      setIsPopoverOpen(false); 
+    setNewTagInput({ ...newTagInput, emoji: emojiData.native });
+    setIsPopoverOpen(false);
   };
 
   const triggerFileDialog = () => {
@@ -173,10 +173,9 @@ export function NoteEditor({ note, onUpdate, onDelete, onAddAttachments, onRemov
     const suggestions: Tag[] = [];
 
     for (const { keyword, emoji, label } of KEYWORD_SUGGESTIONS) {
-      if (lowerContent.includes(keyword) && 
-          !existingLabels.has(label.toLowerCase()) && 
-          !existingEmojis.has(emoji)) 
-      {
+      if (lowerContent.includes(keyword) &&
+        !existingLabels.has(label.toLowerCase()) &&
+        !existingEmojis.has(emoji)) {
         suggestions.push({ emoji, label });
         if (suggestions.length >= 3) break;
       }
@@ -189,9 +188,9 @@ export function NoteEditor({ note, onUpdate, onDelete, onAddAttachments, onRemov
 
   const handleApplySuggestion = (suggestion: Tag) => {
     setTags(prev => {
-        const existing = prev.find(t => t.label === suggestion.label);
-        if (existing) return prev;
-        return [...prev, suggestion];
+      const existing = prev.find(t => t.label === suggestion.label);
+      if (existing) return prev;
+      return [...prev, suggestion];
     });
   };
 
@@ -202,7 +201,7 @@ export function NoteEditor({ note, onUpdate, onDelete, onAddAttachments, onRemov
         <Input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="text-2xl font-semibold border-none shadow-none focus-visible:ring-0 px-0"
+          className="text-2xl font-semibold border-none shadow-none focus-visible:ring-0 px-0 mb-2"
           placeholder="Note title..."
         />
         <AlertDialog>
@@ -241,90 +240,90 @@ export function NoteEditor({ note, onUpdate, onDelete, onAddAttachments, onRemov
       <div className="flex flex-col gap-2 pb-2 border-b border-border/50 dark:border-border/50">
         <div className="flex flex-wrap items-center gap-2">
           {tags.map((tag) => (
-            <Badge 
-              key={tag.label} 
-              variant="secondary" 
+            <Badge
+              key={tag.label}
+              variant="secondary"
               className="cursor-pointer group hover:bg-destructive/10 dark:hover:bg-destructive/10"
               onClick={() => handleRemoveTag(tag.label)}
             >
               {tag.emoji} {tag.label}
-              <X className="w-3 h-3 ml-1 text-muted-foreground group-hover:text-destructive"/>
+              <X className="w-3 h-3 ml-1 text-muted-foreground group-hover:text-destructive" />
             </Badge>
           ))}
         </div>
-        
+
         {/* New Tag Input */}
         <div className="flex items-center gap-1.5 pt-2">
-            {/* EMOJI PICKER INTEGRATION */}
-            <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-                <PopoverTrigger asChild>
-                    <Button 
-                        type="button" 
-                        variant="outline"
-                        size="icon"
-                        className="text-lg p-0 w-8 h-8 flex-shrink-0 relative"
-                        title="Select Emoji"
-                    >
-                        {/* Show selected emoji or a smile icon */}
-                        {newTagInput.emoji === '🏷️' ? <Smile className="w-4 h-4" /> : null}
-                        {/* Overlay the actual emoji if one is selected */}
-                        {newTagInput.emoji !== '🏷️' && 
-                            <span className="absolute text-base pointer-events-none">{newTagInput.emoji}</span>
-                        }
-                    </Button>
-                </PopoverTrigger>
-                {/* PopoverContent houses the library Picker component */}
-                <PopoverContent className="w-[300px] p-0" side="bottom" align="start">
-                    <Picker 
-                        data={data}
-                        onEmojiSelect={handleEmojiSelect}
-                        theme="auto" 
-                        previewPosition="none"
-                        // REMOVED: searchPosition="none" -> The search bar is now visible by default
-                        categories={['frequent', 'people', 'nature', 'food', 'activity', 'travel', 'objects', 'symbols']}
-                    />
-                </PopoverContent>
-            </Popover>
-            
-            <Input
-              value={newTagInput.label}
-              onChange={(e) => setNewTagInput({ ...newTagInput, label: e.target.value })}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  handleAddTag();
+          {/* EMOJI PICKER INTEGRATION */}
+          <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="text-lg p-0 w-8 h-8 flex-shrink-0 relative"
+                title="Select Emoji"
+              >
+                {/* Show selected emoji or a smile icon */}
+                {newTagInput.emoji === '🏷️' ? <Smile className="w-4 h-4" /> : null}
+                {/* Overlay the actual emoji if one is selected */}
+                {newTagInput.emoji !== '🏷️' &&
+                  <span className="absolute text-base pointer-events-none">{newTagInput.emoji}</span>
                 }
-              }}
-              placeholder="Add tag label..."
-              className="h-8 text-sm flex-1"
-              maxLength={30}
-            />
-            <Button 
-                size="sm" 
-                onClick={handleAddTag} 
-                disabled={newTagInput.label.trim() === '' || tags.length >= 5}
-                title={tags.length >= 5 ? "Max 5 tags allowed" : "Add Tag"}
-            >
-                Add Tag
-            </Button>
+              </Button>
+            </PopoverTrigger>
+            {/* PopoverContent houses the library Picker component */}
+            <PopoverContent className="w-[300px] p-0" side="bottom" align="start">
+              <Picker
+                data={data}
+                onEmojiSelect={handleEmojiSelect}
+                theme="auto"
+                previewPosition="none"
+                // REMOVED: searchPosition="none" -> The search bar is now visible by default
+                categories={['frequent', 'people', 'nature', 'food', 'activity', 'travel', 'objects', 'symbols']}
+              />
+            </PopoverContent>
+          </Popover>
+
+          <Input
+            value={newTagInput.label}
+            onChange={(e) => setNewTagInput({ ...newTagInput, label: e.target.value })}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleAddTag();
+              }
+            }}
+            placeholder="Add tag label..."
+            className="h-8 text-sm flex-1"
+            maxLength={30}
+          />
+          <Button
+            size="sm"
+            onClick={handleAddTag}
+            disabled={newTagInput.label.trim() === '' || tags.length >= 5}
+            title={tags.length >= 5 ? "Max 5 tags allowed" : "Add Tag"}
+          >
+            Add Tag
+          </Button>
         </div>
 
         {/* Suggested Tags based on Content */}
         {suggestedTags.length > 0 && tags.length < 5 && (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span>Suggestions:</span>
-                {suggestedTags.map((tag) => (
-                    <Badge 
-                        key={tag.label} 
-                        variant="secondary" 
-                        className="cursor-pointer hover:bg-primary/10 transition-colors"
-                        onClick={() => handleApplySuggestion(tag)}
-                        title={`Click to add ${tag.label} tag`}
-                    >
-                        {tag.emoji} {tag.label}
-                    </Badge>
-                ))}
-            </div>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span>Suggestions:</span>
+            {suggestedTags.map((tag) => (
+              <Badge
+                key={tag.label}
+                variant="secondary"
+                className="cursor-pointer hover:bg-primary/10 transition-colors"
+                onClick={() => handleApplySuggestion(tag)}
+                title={`Click to add ${tag.label} tag`}
+              >
+                {tag.emoji} {tag.label}
+              </Badge>
+            ))}
+          </div>
         )}
 
         {tags.length >= 5 && <p className="text-xs text-muted-foreground text-right pt-1">Max 5 tags per note</p>}
@@ -332,7 +331,7 @@ export function NoteEditor({ note, onUpdate, onDelete, onAddAttachments, onRemov
 
 
       {/* Timestamp Display */}
-      <div className="flex items-center gap-4 text-sm text-muted-foreground pb-2">
+      <div className="flex items-center gap-4 text-sm text-muted-foreground pb-2 mt-1">
         <div className="flex items-center gap-1.5">
           <Calendar className="w-4 h-4" />
           <span>Created: {formatTimestamp(note.createdAt)}</span>
