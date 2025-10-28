@@ -19,6 +19,7 @@ interface NotesSidebarProps {
   onCreateNote: () => void;
   onDuplicateNote?: (id: string) => void;
   onDelete?: (id: string) => void;
+  onUpdateNote?: (id: string, updates: Partial<Note>) => void;
 }
 
 export function NotesSidebar({
@@ -27,7 +28,8 @@ export function NotesSidebar({
   onSelectNote,
   onCreateNote,
   onDelete,
-  onDuplicateNote, 
+  onDuplicateNote,
+  onUpdateNote, 
 }: NotesSidebarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -52,10 +54,13 @@ export function NotesSidebar({
     }
   );
 
+  const favoriteNotes = filteredNotes.filter(note => note.favorite);
+  const regularNotes = filteredNotes.filter(note => !note.favorite);
+
   const handleAuthAction = () => {
     if (isLoggedIn) {
       logout(); // logout instantly
-      showToast({ title: "Logged out successfully", variant: "success" });
+      showToast("Logged out successfully", "success");
     } else {
       setIsAuthOpen(true); // open modal
     }
@@ -63,7 +68,7 @@ export function NotesSidebar({
 
   const handleLoginSuccess = (loggedInUser: { username?: string; email?: string }) => {
     setIsAuthOpen(false);
-    showToast({ title: `Welcome back, ${loggedInUser.username || loggedInUser.email}!`, variant: "success" });
+    showToast(`Welcome back, ${loggedInUser.username || loggedInUser.email}!`, "success");
   };
 
   return (
@@ -81,35 +86,58 @@ export function NotesSidebar({
                 const activeNote = notes.find(note => note.id === activeNoteId);
                 if (!activeNote) return;
 
-                const doc = new jsPDF();
-                const pageWidth = doc.internal.pageSize.getWidth();
-                const margin = 10;
-                const contentWidth = pageWidth - (margin * 2);
+                try {
+                  const doc = new jsPDF();
+                  const pageWidth = doc.internal.pageSize.getWidth();
+                  const margin = 10;
+                  const contentWidth = pageWidth - (margin * 2);
 
-                doc.setFontSize(16);
-                doc.text(activeNote.title || 'Untitled Note', margin, margin);
-                
-                doc.setFontSize(10);
-                const tagString = activeNote.tags.map(t => `${t.emoji} ${t.label}`).join(', ');
-                doc.text(`Tags: ${tagString}`, margin, margin + 5);
+                  doc.setFontSize(16);
+                  doc.text(activeNote.title || 'Untitled Note', margin, margin);
+                  
+                  doc.setFontSize(10);
+                  const tagString = (activeNote.tags || []).map((t: any) => `${t.emoji} ${t.label}`).join(', ');
+                  if (tagString) doc.text(`Tags: ${tagString}`, margin, margin + 5);
 
-                doc.setFontSize(12);
-                const contentLines = doc.splitTextToSize(activeNote.content, contentWidth);
+                  doc.setFontSize(12);
+                  const contentLines = doc.splitTextToSize(activeNote.content || '', contentWidth);
 
-                let yOffset = margin + 15; 
-                const lineHeight = 7;
+                  let yOffset = margin + 15; 
+                  const lineHeight = 7;
 
-                contentLines.forEach((line: string) => {
-                  if (yOffset > doc.internal.pageSize.getHeight() - margin) {
-                    doc.addPage();
-                    yOffset = margin;
+                  contentLines.forEach((line: string) => {
+                    if (yOffset > doc.internal.pageSize.getHeight() - margin) {
+                      doc.addPage();
+                      yOffset = margin;
+                    }
+                    doc.text(line, margin, yOffset);
+                    yOffset += lineHeight;
+                  });
+
+                  doc.save(`${(activeNote.title || 'note').replace(/[/\\?%*:|\"<>]/g, '')}.pdf`);
+                  showToast(`"${activeNote.title || 'Untitled Note'}" exported to PDF.`, "success");
+                } catch (err) {
+                  // Fallback: open printable window (safer than letting the app crash)
+                  console.error('PDF export failed, falling back to print:', err);
+                  try {
+                    const printWindow = window.open('', '_blank');
+                    if (printWindow) {
+                      printWindow.document.write(`<html><head><title>${(activeNote.title || 'Note')}</title></head><body><h1>${(activeNote.title || 'Untitled Note')}</h1><pre>${(activeNote.content || '')}</pre></body></html>`);
+                      printWindow.document.close();
+                      printWindow.focus();
+                      // Delay print slightly to ensure content rendered
+                      setTimeout(() => {
+                        printWindow.print();
+                      }, 300);
+                      showToast('PDF export failed — opened printable view.', 'error');
+                    } else {
+                      showToast('Unable to open print window.', 'error');
+                    }
+                  } catch (e) {
+                    console.error('Fallback print failed:', e);
+                    showToast('Could not export note.', 'error');
                   }
-                  doc.text(line, margin, yOffset);
-                  yOffset += lineHeight;
-                });
-
-                doc.save(`${activeNote.title || 'note'}.pdf`);
-                showToast({ title: "Note Exported", description: `"${activeNote.title || 'Untitled Note'}" exported to PDF.`, variant: "default" });
+                }
               }}
               size="icon"
               variant="outline"
@@ -141,16 +169,53 @@ export function NotesSidebar({
               {searchQuery ? "No matching notes, tags, or emojis found" : "No notes yet. Create one!"}
             </div>
           ) : (
-            filteredNotes.map((note) => (
-              <NoteCard
-                key={note.id}
-                note={note}
-                isActive={note.id === activeNoteId}
-                onClick={() => onSelectNote(note.id)}
-                onDelete={onDelete || (() => {})}
-                onDuplicate={onDuplicateNote}
-              />
-            ))
+            <>
+              {/* Favorites section */}
+              {favoriteNotes.length > 0 && (
+                <div className="mb-4">
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-2">⭐ Favorites</h3>
+                  {favoriteNotes.map((note) => (
+                    <NoteCard
+                      key={note.id}
+                      note={note}
+                      isActive={note.id === activeNoteId}
+                      onClick={() => onSelectNote(note.id)}
+                      onDelete={onDelete || (() => {})}
+                      onDuplicate={onDuplicateNote}
+                      onToggleFavorite={(id) => {
+                        if (onUpdateNote) onUpdateNote(id, { favorite: !note.favorite });
+                      }}
+                      onRename={(id, newTitle) => {
+                        if (onUpdateNote) onUpdateNote(id, { title: newTitle });
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* Regular notes section */}
+              {regularNotes.length > 0 && (
+                <>
+                  {favoriteNotes.length > 0 && <h3 className="text-sm font-semibold text-muted-foreground mb-2">All Notes</h3>}
+                  {regularNotes.map((note) => (
+                    <NoteCard
+                      key={note.id}
+                      note={note}
+                      isActive={note.id === activeNoteId}
+                      onClick={() => onSelectNote(note.id)}
+                      onDelete={onDelete || (() => {})}
+                      onDuplicate={onDuplicateNote}
+                      onToggleFavorite={(id) => {
+                        if (onUpdateNote) onUpdateNote(id, { favorite: !note.favorite });
+                      }}
+                      onRename={(id, newTitle) => {
+                        if (onUpdateNote) onUpdateNote(id, { title: newTitle });
+                      }}
+                    />
+                  ))}
+                </>
+              )}
+            </>
           )}
         </div>
       </ScrollArea>

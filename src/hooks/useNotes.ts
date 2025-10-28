@@ -12,7 +12,7 @@ export function useNotes() {
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
-        const notesWithDates = parsed.map((note: Note & { createdAt: string; updatedAt: string }) => ({
+        const notesWithDates = parsed.map((note: any) => ({
           ...note,
           createdAt: new Date(note.createdAt),
           updatedAt: new Date(note.updatedAt),
@@ -60,19 +60,23 @@ export function useNotes() {
       content: '',
       createdAt: new Date(),
       updatedAt: new Date(),
+      tags: [],
+      favorite: false,
+      attachments: [],
     };
     setNotes((prev) => [newNote, ...prev]);
     return newNote.id;
   };
 
-  const updateNote = (id: string, updates: Partial<Pick<Note, 'title' | 'content'>>) => {
+  const updateNote = (id: string, updates: Partial<Note>) => {
     setNotes((prev) =>
       prev.map((note) => {
         if (note.id === id) {
-          const updatedNote = { ...note, ...updates, updatedAt: new Date() };
+          const merged = { ...note, ...updates } as Note;
+          const updatedNote: Note = { ...merged, updatedAt: new Date() };
           // If title is being updated, ensure it's unique
           if (updates.title !== undefined) {
-            updatedNote.title = getUniqueTitle(updates.title, id);
+            updatedNote.title = getUniqueTitle(updates.title as string, id);
           }
           return updatedNote;
         }

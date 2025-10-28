@@ -1,9 +1,24 @@
+export interface Tag {
+  emoji: string;
+  label: string;
+}
+
+export interface Attachment {
+  id: string;
+  name: string;
+  type: string;
+  dataUrl: string; // base64/data URL for quick storage
+}
+
 export interface Note {
   id: string;
   title: string;
   content: string;
   createdAt: Date;
   updatedAt: Date;
+  tags?: Tag[];
+  favorite?: boolean;
+  attachments?: Attachment[];
 }
 // Utility function to format timestamps
 export const formatTimestamp = (date: Date, locale: string = 'en-US'): string => {

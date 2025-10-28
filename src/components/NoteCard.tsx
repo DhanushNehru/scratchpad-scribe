@@ -1,8 +1,11 @@
 import { Note, formatTimestamp, getRelativeTime } from '@/types/note';
 import { Card } from '@/components/ui/card';
-import { Calendar, Clock, Copy } from 'lucide-react';
+import { Calendar, Clock, Copy, Star, Paperclip, Link, Edit3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
+import { showToast } from '@/lib/toast';
+import { useState } from 'react';
+import { Input } from '@/components/ui/input';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,6 +17,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge'; // Import Badge
 
 interface NoteCardProps {
@@ -22,10 +34,14 @@ interface NoteCardProps {
   onClick: () => void;
   onDelete: (id: string) => void;
   onDuplicate?: (id: string) => void;
+  onToggleFavorite?: (id: string) => void;
+  onRename?: (id: string, newTitle: string) => void;
 }
 
-export function NoteCard({ note, isActive, onClick, onDelete, onDuplicate }: NoteCardProps) {
+export function NoteCard({ note, isActive, onClick, onDelete, onDuplicate, onToggleFavorite, onRename }: NoteCardProps) {
   const preview = note.content.slice(0, 100) || 'No content';
+  const [isRenameOpen, setIsRenameOpen] = useState(false);
+  const [newTitle, setNewTitle] = useState(note.title);
 
   return (
     <Card
@@ -66,7 +82,56 @@ export function NoteCard({ note, isActive, onClick, onDelete, onDuplicate }: Not
 
       <div className="flex justify-center items-center">
         <div className="flex gap-2 items-center">
-          {/* Duplicate button (optional) */}
+          {/* Favorite */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (onToggleFavorite) onToggleFavorite(note.id);
+            }}
+            title={note.favorite ? 'Unfavorite' : 'Add to favorites'}
+          >
+            <Star className={`h-5 w-5 ${note.favorite ? 'text-yellow-400' : ''}`} />
+          </Button>
+
+          {/* Copy Link */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={async (e) => {
+              e.stopPropagation();
+              
+              // Create shareable link with note ID as query parameter
+              const shareUrl = `${window.location.origin}${window.location.pathname}?note=${note.id}`;
+              
+              try {
+                if (navigator.clipboard) {
+                  await navigator.clipboard.writeText(shareUrl);
+                  showToast('Note link copied to clipboard', 'success');
+                } else {
+                  // Fallback for older browsers
+                  const textArea = document.createElement('textarea');
+                  textArea.value = shareUrl;
+                  textArea.style.position = 'fixed';
+                  textArea.style.opacity = '0';
+                  document.body.appendChild(textArea);
+                  textArea.select();
+                  document.execCommand('copy');
+                  document.body.removeChild(textArea);
+                  showToast('Note link copied to clipboard', 'success');
+                }
+              } catch (err) {
+                console.error('Copy link failed', err);
+                showToast('Could not copy link', 'error');
+              }
+            }}
+            title="Copy link to note"
+          >
+            <Link className="h-5 w-5" />
+          </Button>
+
+          {/* Duplicate Note (Copy) */}
           {onDuplicate && (
             <Button
               variant="ghost"
@@ -79,6 +144,73 @@ export function NoteCard({ note, isActive, onClick, onDelete, onDuplicate }: Not
             >
               <Copy className="h-5 w-5" />
             </Button>
+          )}
+
+          {/* Rename button */}
+          {onRename && (
+            <Dialog open={isRenameOpen} onOpenChange={setIsRenameOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setNewTitle(note.title);
+                  }}
+                  title="Rename note"
+                >
+                  <Edit3 className="h-5 w-5" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent onClick={(e) => e.stopPropagation()}>
+                <DialogHeader>
+                  <DialogTitle>Rename Note</DialogTitle>
+                  <DialogDescription>
+                    Enter a new name for this note.
+                  </DialogDescription>
+                </DialogHeader>
+                <Input
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  placeholder="Note title..."
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      if (newTitle.trim()) {
+                        onRename(note.id, newTitle.trim());
+                        setIsRenameOpen(false);
+                        showToast('Note renamed successfully', 'success');
+                      }
+                    }
+                  }}
+                  autoFocus
+                />
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsRenameOpen(false);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (newTitle.trim()) {
+                        onRename(note.id, newTitle.trim());
+                        setIsRenameOpen(false);
+                        showToast('Note renamed successfully', 'success');
+                      }
+                    }}
+                    disabled={!newTitle.trim()}
+                  >
+                    Rename
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           )}
 
           <AlertDialog>

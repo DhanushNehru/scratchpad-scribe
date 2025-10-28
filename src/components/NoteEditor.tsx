@@ -3,7 +3,7 @@ import { Note, formatTimestamp, getRelativeTime } from "@/types/note";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Trash2, Calendar, Clock, X, Smile } from "lucide-react";
+import { Trash2, Calendar, Clock, X, Smile, Paperclip, FileImage, Download } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,7 +34,7 @@ interface NoteEditorProps {
   note: Note & { tags?: Tag[] };
   onUpdate: (
     id: string,
-    updates: Partial<Pick<Note, "title" | "content"> & { tags?: Tag[] }>
+    updates: Partial<Pick<Note, "title" | "content"> & { tags?: Tag[]; attachments?: any[]; favorite?: boolean }>
   ) => void;
   onDelete: (id: string) => void;
 }
@@ -54,13 +54,16 @@ export function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
   const [title, setTitle] = useState(note.title);
   const [content, setContent] = useState(note.content);
   const [tags, setTags] = useState<Tag[]>(note.tags || []);
+  const [attachments, setAttachments] = useState<any[]>(note.attachments || []);
   const [newTagInput, setNewTagInput] = useState<{ emoji: string; label: string }>({ emoji: '🏷️', label: '' });
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [fileInputRef] = useState<React.RefObject<HTMLInputElement>>({ current: null });
 
   useEffect(() => {
     setTitle(note.title);
     setContent(note.content);
     setTags(note.tags || []);
+    setAttachments(note.attachments || []);
   }, [note.id, note.title, note.content, note.tags]);
 
   useEffect(() => {
@@ -68,11 +71,12 @@ export function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
       if (
         title !== note.title ||
         content !== note.content ||
-        JSON.stringify(tags) !== JSON.stringify(note.tags)
+        JSON.stringify(tags) !== JSON.stringify(note.tags) ||
+        JSON.stringify(attachments) !== JSON.stringify(note.attachments)
       ) {
-        onUpdate(note.id, { title, content, tags });
+        onUpdate(note.id, { title, content, tags, attachments });
       }
-    }, 500);
+  }, 500);
 
     return () => clearTimeout(timer);
   }, [title, content, tags, note.id, note.title, note.content, note.tags, onUpdate]);
@@ -102,6 +106,32 @@ export function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
   const handleEmojiSelect = (emojiData: { native: string }) => {
     setNewTagInput({ ...newTagInput, emoji: emojiData.native });
     setIsPopoverOpen(false);
+  };
+
+  const handleAttachFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Max file size is 5MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const newAttachment = {
+        id: crypto.randomUUID(),
+        name: file.name,
+        type: file.type,
+        dataUrl: reader.result as string,
+      };
+      setAttachments((prev: any[]) => [...prev, newAttachment]);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = ''; // reset so same file can be selected again
+  };
+
+  const handleRemoveAttachment = (id: string) => {
+    setAttachments((prev: any[]) => prev.filter(a => a.id !== id));
   };
 
   const getSuggestions = (noteContent: string, currentTags: Tag[]): Tag[] => {
@@ -272,17 +302,74 @@ export function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
 
 
       {/* Timestamp Display */}
-      <div className="flex items-center gap-4 text-sm text-muted-foreground pb-2 mt-1">
+      <div className="flex items-center justify-between gap-4 text-sm text-muted-foreground pb-2 mt-1 border-b border-border/50">
         <div className="flex items-center gap-1.5">
           <Calendar className="w-4 h-4" />
           <span>Created: {formatTimestamp(note.createdAt)}</span>
         </div>
-        <span className="text-muted-foreground/40">•</span>
-        <div className="flex items-center gap-1.5">
-          <Clock className="w-4 h-4" />
-          <span>Edited {getRelativeTime(note.updatedAt)}</span>
+        <div className="flex items-center gap-4">
+          <span className="text-muted-foreground/40">•</span>
+          <div className="flex items-center gap-1.5">
+            <Clock className="w-4 h-4" />
+            <span>Edited {getRelativeTime(note.updatedAt)}</span>
+          </div>
+          {/* Attach file button */}
+          <input
+            ref={(r) => { if (fileInputRef) (fileInputRef as any).current = r; }}
+            type="file"
+            className="hidden"
+            onChange={handleAttachFile}
+            accept="image/*,.pdf,.txt,.doc,.docx"
+          />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => (fileInputRef as any).current?.click()}
+            title="Attach file (max 5MB)"
+          >
+            <Paperclip className="w-4 h-4 mr-1" />
+            Attach
+          </Button>
         </div>
       </div>
+
+      {/* Attachments display */}
+      {attachments && attachments.length > 0 && (
+        <div className="flex flex-wrap gap-2 pt-2 pb-2 border-b border-border/50">
+          {attachments.map((a: any) => {
+            const isImage = a.type.startsWith('image/');
+            return (
+              <div key={a.id} className="relative group border rounded p-2 flex items-center gap-2 hover:bg-secondary/20">
+                {isImage ? (
+                  <img src={a.dataUrl} alt={a.name} className="w-12 h-12 object-cover rounded" />
+                ) : (
+                  <FileImage className="w-12 h-12 text-muted-foreground" />
+                )}
+                <div className="flex flex-col flex-1 min-w-0">
+                  <span className="text-xs font-medium truncate">{a.name}</span>
+                  <a
+                    href={a.dataUrl}
+                    download={a.name}
+                    className="text-xs text-primary hover:underline flex items-center gap-1"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Download className="w-3 h-3" /> Download
+                  </a>
+                </div>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="w-6 h-6 opacity-0 group-hover:opacity-100 text-destructive"
+                  onClick={() => handleRemoveAttachment(a.id)}
+                  title="Remove attachment"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            );
+          })}
+        </div>
+      )}
       <Textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}

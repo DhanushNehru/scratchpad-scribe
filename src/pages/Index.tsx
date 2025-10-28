@@ -19,6 +19,27 @@ const Index = () => {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
+  // Handle shared note links (e.g., ?note=abc123)
+  useEffect(() => {
+    if (notes.length === 0) return;
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const noteIdFromUrl = urlParams.get('note');
+    
+    if (noteIdFromUrl) {
+      const noteExists = notes.find(n => n.id === noteIdFromUrl);
+      if (noteExists) {
+        setActiveNoteId(noteIdFromUrl);
+        toast.success('Opened shared note');
+        // Clean up URL without reloading
+        window.history.replaceState({}, '', window.location.pathname);
+      } else {
+        toast.error('Shared note not found');
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+    }
+  }, [notes]);
+
   const handleCreateNote = () => {
     const newId = createNote();
     setActiveNoteId(newId);
@@ -149,6 +170,7 @@ const Index = () => {
             onCreateNote={handleCreateNote}
             onDuplicateNote={handleDuplicateNote}
             onDelete={handleDeleteNote}
+            onUpdateNote={updateNote}
           />
           <main className="flex-1 overflow-hidden relative">
             {/* Keyboard Shortcuts Helper */}
@@ -253,6 +275,7 @@ const Index = () => {
               onCreateNote={handleCreateNote}
               onDuplicateNote={handleDuplicateNote}
               onDelete={handleDeleteNote}
+              onUpdateNote={updateNote}
             />
           )}
         </main>
