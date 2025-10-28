@@ -4,6 +4,16 @@ import { NotesSidebar } from "@/components/NotesSidebar";
 import { NoteEditor } from "@/components/NoteEditor";
 import { FileText, ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const Index = () => {
   const { notes, createNote, updateNote, deleteNote, duplicateNote } =
@@ -11,7 +21,8 @@ const Index = () => {
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(true);
-
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
@@ -25,18 +36,25 @@ const Index = () => {
   };
 
   const handleDeleteNote = (id: string) => {
+    const deletedNote = notes.find(n => n.id === id);
     deleteNote(id);
     if (activeNoteId === id) {
       setActiveNoteId(notes.length > 1 ? notes[0].id : null);
     }
+    setPendingDeleteId(null);
+    toast.success(`Note "${deletedNote?.title || 'Untitled Note'}" deleted`);
   };
 
   const handleDuplicateNote = useCallback(
     (id: string) => {
       const newId = duplicateNote(id);
-      if (newId) setActiveNoteId(newId);
+      if (newId) {
+        setActiveNoteId(newId);
+        const originalNote = notes.find(n => n.id === id);
+        toast.success(`Note "${originalNote?.title || 'Untitled Note'}" duplicated`);
+      }
     },
-    [duplicateNote]
+    [duplicateNote, notes]
   );
 
   // Keyboard shortcut: Ctrl/Cmd + Shift + D to duplicate active note
@@ -101,8 +119,7 @@ const Index = () => {
               event.preventDefault();
               event.stopPropagation();
               if (activeNoteId) {
-                handleDeleteNote(activeNoteId);
-                toast.success("Note deleted");
+                setPendingDeleteId(activeNoteId);
               }
             }
             break;
@@ -224,6 +241,33 @@ const Index = () => {
                 </p>
               </div>
             )}
+            {/* Delete confirmation dialog */}
+                        <AlertDialog
+                          open={!!pendingDeleteId}
+                          onOpenChange={(open) => !open && setPendingDeleteId(null)}
+                        >
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Note</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete this note
+                                <span className="font-semibold text-destructive"> "{pendingDeleteId ? notes.find(n => n.id === pendingDeleteId)?.title || 'Untitled Note' : ''}"</span>?
+                                This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel onClick={() => setPendingDeleteId(null)}>
+                                Cancel
+                              </AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDeleteNote(pendingDeleteId!)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
           </main>
         </>
       )}
@@ -242,7 +286,7 @@ const Index = () => {
               <NoteEditor
                 note={activeNote}
                 onUpdate={updateNote}
-                onDelete={handleDeleteNote}
+                onDelete={() => setPendingDeleteId(activeNoteId!)}
               />
             </div>
           ) : (

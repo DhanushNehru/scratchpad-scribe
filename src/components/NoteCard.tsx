@@ -96,7 +96,9 @@ export function NoteCard({ note, isActive, onClick, onDelete, onDuplicate }: Not
               <AlertDialogHeader>
                 <AlertDialogTitle>Delete Note</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Are you sure you want to delete this note? This action cannot be undone.
+                  Are you sure you want to delete this note?
+                  <span className="font-semibold text-destructive"> "{note.title || 'Untitled Note'}"</span>?
+                  This action cannot be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
