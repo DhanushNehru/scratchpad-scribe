@@ -339,14 +339,6 @@ const Index = () => {
                 onRemoveAttachment={removeAttachment}
                 onGetAttachmentBlob={getAttachmentBlob}
               />
-              <NoteEditor
-                note={activeNote}
-                onUpdate={updateNote}
-                onDelete={handleDeleteNote}
-                onAddAttachments={addAttachments}
-                onRemoveAttachment={removeAttachment}
-                onGetAttachmentBlob={getAttachmentBlob}
-              />
             </div>
           ) : (
             <NotesSidebar
