@@ -139,7 +139,7 @@ export function NoteEditor({ note, onUpdate, onDelete, onAddAttachments, onRemov
       if (document.body.contains(input)) {
         input.remove();
       }
-    }, 30000);
+    }, 10000);
     input.click();
   };
 

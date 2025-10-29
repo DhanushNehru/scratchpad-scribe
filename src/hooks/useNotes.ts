@@ -146,7 +146,7 @@ export function useNotes() {
         console.warn(`File too large: ${file.name}`);
         continue;
       }
-      if (file.type && !(ALLOWED_PREFIXES.some(p => file.type.startsWith(p)) || file.type === 'application/pdf')) {
+      if (file.type && !ALLOWED_PREFIXES.some(p => file.type.startsWith(p))) {
         console.warn(`Unsupported file type: ${file.name} (${file.type})`);
         continue;
       }

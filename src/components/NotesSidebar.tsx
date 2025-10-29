@@ -62,7 +62,7 @@ export function NotesSidebar({
   const handleAuthAction = () => {
     if (isLoggedIn) {
       logout(); // logout instantly
-      showToast({ title: "Logged out successfully", variant: "success" });
+      showToast("Logged out successfully", "success");
     } else {
       setIsAuthOpen(true); // open modal
     }
@@ -70,7 +70,7 @@ export function NotesSidebar({
 
   const handleLoginSuccess = (loggedInUser: { username?: string; email?: string }) => {
     setIsAuthOpen(false);
-    showToast({ title: `Welcome back, ${loggedInUser.username || loggedInUser.email}!`, variant: "success" });
+    showToast(`Welcome back, ${loggedInUser.username || loggedInUser.email}!`, "success");
   };
 
   return (
@@ -132,13 +132,10 @@ export function NotesSidebar({
 
                   const fileName = `${safeTitle.replace(/[\\/:*?"<>|]/g, '_')}.pdf`;
                   doc.save(fileName);
-                  showToast({ title: "Note Exported", description: `"${safeTitle}" exported to PDF.`, variant: "default" });
-                  setTimeout(() => {
-                    window.location.reload();
-                  }, 400);
+                  showToast(`"${safeTitle}" exported to PDF.`, "success");
                 } catch (err) {
                   console.error('PDF export failed', err);
-                  showToast({ title: 'Export failed', description: 'There was a problem exporting this note.', variant: 'destructive' });
+                  showToast('There was a problem exporting this note.', 'error');
                 }
               }}
               size="icon"
