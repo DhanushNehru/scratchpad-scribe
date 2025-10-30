@@ -3,7 +3,7 @@ import { Note } from "@/types/note";
 import { NoteCard } from "./NoteCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PlusCircle, Search, FileDown, LogIn, LogOut } from "lucide-react";
+import { PlusCircle, Search, FileDown, LogIn, LogOut, Pin } from "lucide-react";
 import jsPDF from "jspdf";
 import { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -19,6 +19,8 @@ interface NotesSidebarProps {
   onCreateNote: () => void;
   onDuplicateNote?: (id: string) => void;
   onDelete?: (id: string) => void;
+  onTogglePin?: (id: string) => void;
+  onOpenPinned?: () => void;
 }
 
 export function NotesSidebar({
@@ -28,6 +30,8 @@ export function NotesSidebar({
   onCreateNote,
   onDelete,
   onDuplicateNote, 
+  onTogglePin,
+  onOpenPinned,
 }: NotesSidebarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -52,10 +56,13 @@ export function NotesSidebar({
     }
   );
 
+  const pinnedNotes = filteredNotes.filter(n => n.pinned);
+  const otherNotes = filteredNotes.filter(n => !n.pinned);
+
   const handleAuthAction = () => {
     if (isLoggedIn) {
       logout(); // logout instantly
-      showToast({ title: "Logged out successfully", variant: "success" });
+      showToast("Logged out successfully", "success");
     } else {
       setIsAuthOpen(true); // open modal
     }
@@ -63,15 +70,25 @@ export function NotesSidebar({
 
   const handleLoginSuccess = (loggedInUser: { username?: string; email?: string }) => {
     setIsAuthOpen(false);
-    showToast({ title: `Welcome back, ${loggedInUser.username || loggedInUser.email}!`, variant: "success" });
+    showToast(`Welcome back, ${loggedInUser.username || loggedInUser.email}!`, "success");
   };
 
   return (
-    <div className="w-screen md:w-80 border-r bg-secondary/30 flex flex-col h-screen">
+    <div className="w-screen md:w-96 border-r bg-secondary/30 flex flex-col h-screen">
       <div className="p-4 border-b space-y-3">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-foreground">Notes</h1>
           <div className="flex items-center gap-2">
+            <Button
+              size="icon"
+              variant="outline"
+              className="hover:bg-secondary"
+              title={notes.some(n => n.pinned) ? "Open all pinned in main" : "No pinned notes"}
+              disabled={!notes.some(n => n.pinned)}
+              onClick={() => onOpenPinned && onOpenPinned()}
+            >
+              <Pin className="h-5 w-5" />
+            </Button>
             <ThemeToggle/>
             <Button
               disabled={notes.length === 0 || !activeNoteId}
@@ -81,35 +98,45 @@ export function NotesSidebar({
                 const activeNote = notes.find(note => note.id === activeNoteId);
                 if (!activeNote) return;
 
-                const doc = new jsPDF();
-                const pageWidth = doc.internal.pageSize.getWidth();
-                const margin = 10;
-                const contentWidth = pageWidth - (margin * 2);
+                try {
+                  const doc = new jsPDF();
+                  const pageWidth = doc.internal.pageSize.getWidth();
+                  const margin = 10;
+                  const contentWidth = pageWidth - (margin * 2);
 
-                doc.setFontSize(16);
-                doc.text(activeNote.title || 'Untitled Note', margin, margin);
-                
-                doc.setFontSize(10);
-                const tagString = activeNote.tags.map(t => `${t.emoji} ${t.label}`).join(', ');
-                doc.text(`Tags: ${tagString}`, margin, margin + 5);
+                  const safeTitle = (activeNote.title || 'Untitled Note').trim();
+                  doc.setFontSize(16);
+                  doc.text(safeTitle, margin, margin);
 
-                doc.setFontSize(12);
-                const contentLines = doc.splitTextToSize(activeNote.content, contentWidth);
-
-                let yOffset = margin + 15; 
-                const lineHeight = 7;
-
-                contentLines.forEach((line: string) => {
-                  if (yOffset > doc.internal.pageSize.getHeight() - margin) {
-                    doc.addPage();
-                    yOffset = margin;
+                  doc.setFontSize(10);
+                  const tagString = (activeNote.tags || []).map(t => `${t.emoji} ${t.label}`).join(', ');
+                  if (tagString) {
+                    doc.text(`Tags: ${tagString}`, margin, margin + 5);
                   }
-                  doc.text(line, margin, yOffset);
-                  yOffset += lineHeight;
-                });
 
-                doc.save(`${activeNote.title || 'note'}.pdf`);
-                showToast({ title: "Note Exported", description: `"${activeNote.title || 'Untitled Note'}" exported to PDF.`, variant: "default" });
+                  doc.setFontSize(12);
+                  const content = typeof activeNote.content === 'string' ? activeNote.content : '';
+                  const contentLines = doc.splitTextToSize(content, contentWidth);
+
+                  let yOffset = margin + 15;
+                  const lineHeight = 7;
+
+                  contentLines.forEach((line: string) => {
+                    if (yOffset > doc.internal.pageSize.getHeight() - margin) {
+                      doc.addPage();
+                      yOffset = margin;
+                    }
+                    doc.text(line, margin, yOffset);
+                    yOffset += lineHeight;
+                  });
+
+                  const fileName = `${safeTitle.replace(/[\\/:*?"<>|]/g, '_')}.pdf`;
+                  doc.save(fileName);
+                  showToast(`"${safeTitle}" exported to PDF.`, "success");
+                } catch (err) {
+                  console.error('PDF export failed', err);
+                  showToast('There was a problem exporting this note.', 'error');
+                }
               }}
               size="icon"
               variant="outline"
@@ -135,22 +162,51 @@ export function NotesSidebar({
       </div>
 
       <ScrollArea className="flex-1">
-        <div className="p-4 space-y-2">
+        <div className="p-4 space-y-4">
           {filteredNotes.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               {searchQuery ? "No matching notes, tags, or emojis found" : "No notes yet. Create one!"}
             </div>
           ) : (
-            filteredNotes.map((note) => (
-              <NoteCard
-                key={note.id}
-                note={note}
-                isActive={note.id === activeNoteId}
-                onClick={() => onSelectNote(note.id)}
-                onDelete={onDelete || (() => {})}
-                onDuplicate={onDuplicateNote}
-              />
-            ))
+            <>
+              {pinnedNotes.length > 0 && (
+                <div>
+                  <div className="text-xs uppercase tracking-wide text-muted-foreground mb-2">Pinned</div>
+                  <div className="space-y-2">
+                    {pinnedNotes.map((note) => (
+                      <NoteCard
+                        key={note.id}
+                        note={note}
+                        isActive={note.id === activeNoteId}
+                        onClick={() => onSelectNote(note.id)}
+                        onDelete={onDelete || (() => {})}
+                        onDuplicate={onDuplicateNote}
+                        onTogglePin={onTogglePin}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div>
+                {pinnedNotes.length > 0 && (
+                  <div className="text-xs uppercase tracking-wide text-muted-foreground mt-2 mb-2">Others</div>
+                )}
+                <div className="space-y-2">
+                  {otherNotes.map((note) => (
+                    <NoteCard
+                      key={note.id}
+                      note={note}
+                      isActive={note.id === activeNoteId}
+                      onClick={() => onSelectNote(note.id)}
+                      onDelete={onDelete || (() => {})}
+                      onDuplicate={onDuplicateNote}
+                      onTogglePin={onTogglePin}
+                    />
+                  ))}
+                </div>
+              </div>
+            </>
           )}
         </div>
       </ScrollArea>

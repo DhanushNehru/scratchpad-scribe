@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Note } from '@/types/note';
+import { Note, AttachmentMeta } from '@/types/note';
+import { deleteAttachment as idbDelete, getAttachment as idbGet, putAttachment as idbPut } from '@/lib/attachments';
 
 const STORAGE_KEY = 'notes-app-data';
 
@@ -12,10 +13,11 @@ export function useNotes() {
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
-        const notesWithDates = parsed.map((note: Note & { createdAt: string; updatedAt: string }) => ({
+        const notesWithDates = parsed.map((note: Note & { createdAt: string; updatedAt: string; attachments?: (AttachmentMeta & { createdAt: string })[] }) => ({
           ...note,
           createdAt: new Date(note.createdAt),
           updatedAt: new Date(note.updatedAt),
+          attachments: (note.attachments || []).map((a) => ({ ...a, createdAt: new Date(a.createdAt) })),
         }));
         setNotes(notesWithDates);
       } catch (error) {
@@ -60,12 +62,14 @@ export function useNotes() {
       content: '',
       createdAt: new Date(),
       updatedAt: new Date(),
+      pinned: false,
+      attachments: [],
     };
     setNotes((prev) => [newNote, ...prev]);
     return newNote.id;
   };
 
-  const updateNote = (id: string, updates: Partial<Pick<Note, 'title' | 'content'>>) => {
+  const updateNote = (id: string, updates: Partial<Pick<Note, 'title' | 'content' | 'attachments'>>) => {
     setNotes((prev) =>
       prev.map((note) => {
         if (note.id === id) {
@@ -107,6 +111,9 @@ export function useNotes() {
         // Treat duplicated note as newly created/updated
         createdAt: new Date(),
         updatedAt: new Date(),
+        pinned: false,
+        // Do not copy attachments by default to avoid duplicating large blobs silently
+        attachments: [],
       };
 
       // Insert duplicated note immediately after the original
@@ -118,11 +125,85 @@ export function useNotes() {
     return newId;
   };
 
+  const togglePin = (id: string) => {
+    setNotes((prev) =>
+      prev.map((note) =>
+        note.id === id ? { ...note, pinned: !note.pinned, updatedAt: new Date() } : note
+      )
+    );
+  };
+
+  const addAttachments = async (id: string, files: FileList | File[]) => {
+    const filesArray = Array.from(files as Iterable<File>);
+    const MAX_SIZE = 25 * 1024 * 1024; // 25MB per file
+    const ALLOWED_PREFIXES = [
+      'image/',
+      'application/pdf',
+    ];
+    const metas: AttachmentMeta[] = [];
+    for (const file of filesArray) {
+      if (file.size > MAX_SIZE) {
+        console.warn(`File too large: ${file.name}`);
+        continue;
+      }
+      if (file.type && !ALLOWED_PREFIXES.some(p => file.type.startsWith(p))) {
+        console.warn(`Unsupported file type: ${file.name} (${file.type})`);
+        continue;
+      }
+      const attachmentId = crypto.randomUUID();
+      await idbPut(attachmentId, file);
+      metas.push({
+        id: attachmentId,
+        name: file.name,
+        type: file.type || 'application/octet-stream',
+        size: file.size,
+        createdAt: new Date(),
+      });
+    }
+    if (metas.length === 0) {
+      throw new Error('No supported files to add');
+    }
+    setNotes((prev) =>
+      prev.map((note) =>
+        note.id === id
+          ? {
+              ...note,
+              attachments: [...(note.attachments || []), ...metas],
+              updatedAt: new Date(),
+            }
+          : note
+      )
+    );
+  };
+
+  const removeAttachment = async (id: string, attachmentId: string) => {
+    await idbDelete(attachmentId);
+    setNotes((prev) =>
+      prev.map((note) =>
+        note.id === id
+          ? {
+              ...note,
+              attachments: (note.attachments || []).filter((a) => a.id !== attachmentId),
+              updatedAt: new Date(),
+            }
+          : note
+      )
+    );
+  };
+
+  const getAttachmentBlob = async (attachmentId: string) => {
+    return await idbGet(attachmentId);
+  };
+
   return {
     notes,
     createNote,
     updateNote,
     deleteNote,
     duplicateNote,
+    togglePin,
+    addAttachments,
+    removeAttachment,
+    getAttachmentBlob,
   };
 }
