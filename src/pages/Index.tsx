@@ -22,7 +22,7 @@ const Index = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(true);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
-  
+
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
@@ -37,9 +37,15 @@ const Index = () => {
 
   const handleDeleteNote = (id: string) => {
     const deletedNote = notes.find(n => n.id === id);
+    // Determine next active note before deleting
+    let nextActiveNoteId: string | null = activeNoteId;
+    if (activeNoteId === id) {
+      const remainingNotes = notes.filter(n => n.id !== id);
+      nextActiveNoteId = remainingNotes.length > 0 ? remainingNotes[0].id : null;
+    }
     deleteNote(id);
     if (activeNoteId === id) {
-      setActiveNoteId(notes.length > 1 ? notes[0].id : null);
+      setActiveNoteId(nextActiveNoteId);
     }
     setPendingDeleteId(null);
     toast.success(`Note "${deletedNote?.title || 'Untitled Note'}" deleted`);
@@ -154,6 +160,9 @@ const Index = () => {
 
   const activeNote = notes.find((note) => note.id === activeNoteId);
 
+  const pendingDeleteNote = pendingDeleteId ? notes.find(n => n.id === pendingDeleteId) : null;
+  const pendingDeleteTitle = pendingDeleteNote?.title || 'Untitled Note';
+
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       {/* Desktop Layout */}
@@ -176,9 +185,8 @@ const Index = () => {
             >
               <div
                 id="shortcuts-heading"
-                className={`font-semibold text-foreground text-sm flex justify-between items-center cursor-pointer ${
-                  isShortcutsOpen ? "mb-2" : "mb-0"
-                }`}
+                className={`font-semibold text-foreground text-sm flex justify-between items-center cursor-pointer ${isShortcutsOpen ? "mb-2" : "mb-0"
+                  }`}
                 onClick={() => setIsShortcutsOpen(!isShortcutsOpen)}
                 aria-expanded={isShortcutsOpen}
                 aria-controls="shortcuts-content"
@@ -190,7 +198,7 @@ const Index = () => {
                   <ChevronUp className="h-4 w-4" />
                 )}
               </div>
-              
+
               <div
                 id="shortcuts-content"
                 className={`
@@ -251,7 +259,7 @@ const Index = () => {
                   <AlertDialogTitle>Delete Note</AlertDialogTitle>
                   <AlertDialogDescription>
                     Are you sure you want to delete this note
-                    <span className="font-semibold text-destructive"> "{pendingDeleteId ? notes.find(n => n.id === pendingDeleteId)?.title || 'Untitled Note' : ''}"</span>?
+                    <span className="font-semibold text-destructive"> "{pendingDeleteTitle}"</span>?
                     This action cannot be undone.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
