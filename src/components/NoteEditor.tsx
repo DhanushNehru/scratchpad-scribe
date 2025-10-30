@@ -163,8 +163,7 @@ export function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
               <AlertDialogDescription>
                 Are you sure you want to delete this note
                 <span className="font-semibold text-destructive"> "{note.title || 'Untitled Note'}"</span>?
-                This action cannot be
-                undone.
+                This action cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
