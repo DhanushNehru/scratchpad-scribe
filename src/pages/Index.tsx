@@ -242,32 +242,32 @@ const Index = () => {
               </div>
             )}
             {/* Delete confirmation dialog */}
-                        <AlertDialog
-                          open={!!pendingDeleteId}
-                          onOpenChange={(open) => !open && setPendingDeleteId(null)}
-                        >
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Delete Note</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Are you sure you want to delete this note
-                                <span className="font-semibold text-destructive"> "{pendingDeleteId ? notes.find(n => n.id === pendingDeleteId)?.title || 'Untitled Note' : ''}"</span>?
-                                This action cannot be undone.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel onClick={() => setPendingDeleteId(null)}>
-                                Cancel
-                              </AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDeleteNote(pendingDeleteId!)}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+            <AlertDialog
+              open={!!pendingDeleteId}
+              onOpenChange={(open) => !open && setPendingDeleteId(null)}
+            >
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Note</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete this note
+                    <span className="font-semibold text-destructive"> "{pendingDeleteId ? notes.find(n => n.id === pendingDeleteId)?.title || 'Untitled Note' : ''}"</span>?
+                    This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel onClick={() => setPendingDeleteId(null)}>
+                    Cancel
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => handleDeleteNote(pendingDeleteId!)}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </main>
         </>
       )}
