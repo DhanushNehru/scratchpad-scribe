@@ -29,7 +29,7 @@ export function NotesSidebar({
   onSelectNote,
   onCreateNote,
   onDelete,
-  onDuplicateNote, 
+  onDuplicateNote,
   onTogglePin,
   onOpenPinned,
 }: NotesSidebarProps) {
@@ -45,9 +45,9 @@ export function NotesSidebar({
 
       const titleMatch = note.title.toLowerCase().includes(query);
       const contentMatch = note.content.toLowerCase().includes(query);
-      
+
       // UPDATED: Filtering must work by searching for the tag label OR the tag emoji.
-      const tagMatch = (note.tags || []).some(tag => 
+      const tagMatch = (note.tags || []).some(tag =>
         tag.label.toLowerCase().includes(query) ||
         tag.emoji.includes(rawQuery) // Check the emoji directly against the search query
       );
@@ -89,7 +89,7 @@ export function NotesSidebar({
             >
               <Pin className="h-5 w-5" />
             </Button>
-            <ThemeToggle/>
+            <ThemeToggle />
             <Button
               disabled={notes.length === 0 || !activeNoteId}
               onClick={() => {
@@ -179,7 +179,7 @@ export function NotesSidebar({
                         note={note}
                         isActive={note.id === activeNoteId}
                         onClick={() => onSelectNote(note.id)}
-                        onDelete={onDelete || (() => {})}
+                        onDelete={onDelete || (() => { })}
                         onDuplicate={onDuplicateNote}
                         onTogglePin={onTogglePin}
                       />
@@ -199,7 +199,7 @@ export function NotesSidebar({
                       note={note}
                       isActive={note.id === activeNoteId}
                       onClick={() => onSelectNote(note.id)}
-                      onDelete={onDelete || (() => {})}
+                      onDelete={onDelete || (() => { })}
                       onDuplicate={onDuplicateNote}
                       onTogglePin={onTogglePin}
                     />

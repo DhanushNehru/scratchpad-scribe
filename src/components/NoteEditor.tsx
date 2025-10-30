@@ -162,7 +162,7 @@ export function NoteEditor({ note, onUpdate, onDelete, onAddAttachments, onRemov
       await onRemoveAttachment(note.id, attachment.id);
     }
   };
-  
+
   const getSuggestions = (noteContent: string, currentTags: Tag[]): Tag[] => {
     if (!noteContent || currentTags.length >= 5) return [];
 
@@ -354,8 +354,8 @@ export function NoteEditor({ note, onUpdate, onDelete, onAddAttachments, onRemov
             {note.attachments.map(att => (
               <div key={att.id} className="flex items-center justify-between text-sm bg-muted/40 rounded px-2 py-1">
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className="truncate max-w-[260px]" title={`${att.name} (${Math.round(att.size/1024)} KB)`}>{att.name}</span>
-                  <span className="text-muted-foreground text-xs">{Math.round(att.size/1024)} KB</span>
+                  <span className="truncate max-w-[260px]" title={`${att.name} (${Math.round(att.size / 1024)} KB)`}>{att.name}</span>
+                  <span className="text-muted-foreground text-xs">{Math.round(att.size / 1024)} KB</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Button size="sm" variant="ghost" onClick={() => handleDownload(att)}>Download</Button>
