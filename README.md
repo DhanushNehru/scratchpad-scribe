@@ -15,6 +15,7 @@ With its clean UI and fast performance, it’s perfect for developers, students,
 - ⚡ Built with modern technologies (React + Vite + TypeScript)  
 - 💾 Persistent storage and seamless user experience  
 - 🔔 Toast notifications and smooth transitions  
+- 📎 Attach files, images, and documents to notes (local, private)
 
 ---
 
@@ -63,6 +64,13 @@ npm install
 # Step 4: Start the development server
 npm run dev
 ```
+
+## 📎 Attachments
+
+- Add files from the editor: open a note, scroll to the Attachments section, and click "Add files".
+- Files are stored in your browser using IndexedDB; only lightweight metadata is saved with the note in localStorage.
+- Max file size per attachment is ~25MB. Duplicating a note does not copy attachments.
+- Removing site data will delete stored attachments.
 
 ## 💡 How to Contribute
 
