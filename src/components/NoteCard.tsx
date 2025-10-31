@@ -37,9 +37,8 @@ export function NoteCard({ note, isActive, onClick, onDelete, onDuplicate, onTog
 
   return (
     <Card
-      className={`relative p-4 cursor-pointer transition-all justify-between flex hover:shadow-md ${
-        isActive ? 'ring-2 ring-primary bg-accent/5' : ''
-      }`}
+      className={`relative p-4 cursor-pointer transition-all justify-between flex hover:shadow-md ${isActive ? 'ring-2 ring-primary bg-accent/5' : ''
+        }`}
       onClick={onClick}
     >
       {onTogglePin && (
@@ -64,7 +63,7 @@ export function NoteCard({ note, isActive, onClick, onDelete, onDuplicate, onTog
         <h3 className="font-semibold text-foreground mb-1 truncate font-serif">
           {note.title || 'Untitled Note'}
         </h3>
-        
+
         {/* Tags Display - NEW UI */}
         {note.tags && note.tags.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-2">
@@ -76,7 +75,7 @@ export function NoteCard({ note, isActive, onClick, onDelete, onDuplicate, onTog
             ))}
           </div>
         )}
-        
+
         {/* Timestamp Display */}
         <div className="flex flex-col gap-1 pt-2 border-t border-border/50">
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -187,7 +186,9 @@ export function NoteCard({ note, isActive, onClick, onDelete, onDuplicate, onTog
               <AlertDialogHeader>
                 <AlertDialogTitle>Delete Note</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Are you sure you want to delete this note? This action cannot be undone.
+                  Are you sure you want to delete this note?
+                  <span className="font-semibold text-destructive"> "{note.title || 'Untitled Note'}"</span>?
+                  This action cannot be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>

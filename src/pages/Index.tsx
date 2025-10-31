@@ -6,6 +6,16 @@ import { NoteCard } from "@/components/NoteCard";
 import { Button } from "@/components/ui/button";
 import { FileText, ArrowLeft, ChevronDown, ChevronUp, X } from "lucide-react";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const Index = () => {
   const { notes, createNote, updateNote, deleteNote, duplicateNote, togglePin, addAttachments, removeAttachment, getAttachmentBlob } =
@@ -13,6 +23,7 @@ const Index = () => {
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(true);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [showPinnedView, setShowPinnedView] = useState(false);
 
   useEffect(() => {
@@ -28,18 +39,31 @@ const Index = () => {
   };
 
   const handleDeleteNote = (id: string) => {
+    const deletedNote = notes.find(n => n.id === id);
+    // Determine next active note before deleting
+    let nextActiveNoteId: string | null = activeNoteId;
+    if (activeNoteId === id) {
+      const remainingNotes = notes.filter(n => n.id !== id);
+      nextActiveNoteId = remainingNotes.length > 0 ? remainingNotes[0].id : null;
+    }
     deleteNote(id);
     if (activeNoteId === id) {
-      setActiveNoteId(notes.length > 1 ? notes[0].id : null);
+      setActiveNoteId(nextActiveNoteId);
     }
+    setPendingDeleteId(null);
+    toast.success(`Note "${deletedNote?.title || 'Untitled Note'}" deleted`);
   };
 
   const handleDuplicateNote = useCallback(
     (id: string) => {
       const newId = duplicateNote(id);
-      if (newId) setActiveNoteId(newId);
+      if (newId) {
+        setActiveNoteId(newId);
+        const originalNote = notes.find(n => n.id === id);
+        toast.success(`Note "${originalNote?.title || 'Untitled Note'}" duplicated`);
+      }
     },
-    [duplicateNote]
+    [duplicateNote, notes]
   );
 
   // Sync active note with URL ?note= param
@@ -126,8 +150,7 @@ const Index = () => {
               event.preventDefault();
               event.stopPropagation();
               if (activeNoteId) {
-                handleDeleteNote(activeNoteId);
-                toast.success("Note deleted");
+                setPendingDeleteId(activeNoteId);
               }
             }
             break;
@@ -163,6 +186,9 @@ const Index = () => {
   const activeNote = notes.find((note) => note.id === activeNoteId);
   const pinnedNotes = notes.filter(n => n.pinned);
 
+  const pendingDeleteNote = pendingDeleteId ? notes.find(n => n.id === pendingDeleteId) : null;
+  const pendingDeleteTitle = pendingDeleteNote?.title || 'Untitled Note';
+
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       {/* Desktop Layout */}
@@ -187,9 +213,8 @@ const Index = () => {
             >
               <div
                 id="shortcuts-heading"
-                className={`font-semibold text-foreground text-sm flex justify-between items-center cursor-pointer ${
-                  isShortcutsOpen ? "mb-2" : "mb-0"
-                }`}
+                className={`font-semibold text-foreground text-sm flex justify-between items-center cursor-pointer ${isShortcutsOpen ? "mb-2" : "mb-0"
+                  }`}
                 onClick={() => setIsShortcutsOpen(!isShortcutsOpen)}
                 aria-expanded={isShortcutsOpen}
                 aria-controls="shortcuts-content"
@@ -201,7 +226,7 @@ const Index = () => {
                   <ChevronUp className="h-4 w-4" />
                 )}
               </div>
-              
+
               <div
                 id="shortcuts-content"
                 className={`
@@ -288,6 +313,33 @@ const Index = () => {
                 </p>
               </div>
             )}
+            {/* Delete confirmation dialog */}
+            <AlertDialog
+              open={!!pendingDeleteId}
+              onOpenChange={(open) => !open && setPendingDeleteId(null)}
+            >
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Note</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete this note
+                    <span className="font-semibold text-destructive"> "{pendingDeleteTitle}"</span>?
+                    This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel onClick={() => setPendingDeleteId(null)}>
+                    Cancel
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => handleDeleteNote(pendingDeleteId!)}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </main>
         </>
       )}
@@ -334,6 +386,7 @@ const Index = () => {
               <NoteEditor
                 note={activeNote}
                 onUpdate={updateNote}
+                onDelete={() => setPendingDeleteId(activeNoteId!)}
                 onDelete={handleDeleteNote}
                 onAddAttachments={addAttachments}
                 onRemoveAttachment={removeAttachment}
